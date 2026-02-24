@@ -13,4 +13,3 @@ margin = Rect2(10, 0, 0, 0)
 texture_filter = 1
 texture = SubResource("AtlasTexture_6da2i")
 hframes = 8
-frame = 6
