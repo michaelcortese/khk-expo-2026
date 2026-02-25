@@ -1,7 +1,12 @@
-[gd_scene format=3 uid="uid://hud_segmented_hand_standalone"]
+[gd_scene format=3 uid="uid://hud_segmented_hand_pack"]
+
+[ext_resource type="PackedScene" path="res://ui/elixir_bar_widget.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://ui/card_slot.tscn" id="2"]
+[ext_resource type="Script" path="res://ui/hud.gd" id="3"]
 
 [node name="HUD" type="CanvasLayer"]
 layer = 1
+script = ExtResource("3")
 
 [node name="Root" type="Control" parent="."]
 layout_mode = 3
@@ -39,17 +44,11 @@ theme_override_constants/separation = 12
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ElixirPlaceholder" type="PanelContainer" parent="Root/Split/P1Panel/Layout"]
+[node name="ElixirBarWidget" parent="Root/Split/P1Panel/Layout" instance=ExtResource("1")]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 1
 custom_minimum_size = Vector2(0, 56)
-
-[node name="ElixirLabel" type="Label" parent="Root/Split/P1Panel/Layout/ElixirPlaceholder"]
-layout_mode = 2
-text = "ELIXIR (10-seg widget goes here)"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="HandBar" type="HBoxContainer" parent="Root/Split/P1Panel/Layout"]
 layout_mode = 2
@@ -58,33 +57,17 @@ size_flags_horizontal = 3
 size_flags_vertical = 1
 theme_override_constants/separation = 10
 
-[node name="Card1" type="Button" parent="Root/Split/P1Panel/Layout/HandBar"]
+[node name="Card1" parent="Root/Split/P1Panel/Layout/HandBar" instance=ExtResource("2")]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 150)
-size_flags_horizontal = 3
-size_flags_vertical = 1
-text = "Card 1\n(3)"
 
-[node name="Card2" type="Button" parent="Root/Split/P1Panel/Layout/HandBar"]
+[node name="Card2" parent="Root/Split/P1Panel/Layout/HandBar" instance=ExtResource("2")]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 150)
-size_flags_horizontal = 3
-size_flags_vertical = 1
-text = "Card 2\n(3)"
 
-[node name="Card3" type="Button" parent="Root/Split/P1Panel/Layout/HandBar"]
+[node name="Card3" parent="Root/Split/P1Panel/Layout/HandBar" instance=ExtResource("2")]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 150)
-size_flags_horizontal = 3
-size_flags_vertical = 1
-text = "Card 3\n(2)"
 
-[node name="Card4" type="Button" parent="Root/Split/P1Panel/Layout/HandBar"]
+[node name="Card4" parent="Root/Split/P1Panel/Layout/HandBar" instance=ExtResource("2")]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 150)
-size_flags_horizontal = 3
-size_flags_vertical = 1
-text = "Card 4\n(5)"
 
 [node name="NextCard" type="PanelContainer" parent="Root/Split/P1Panel/Layout/HandBar"]
 layout_mode = 2
@@ -106,9 +89,13 @@ layout_mode = 2
 text = "NEXT"
 horizontal_alignment = 1
 
-[node name="NextIcon" type="PanelContainer" parent="Root/Split/P1Panel/Layout/HandBar/NextCard/NextWrap"]
+[node name="NextIcon" type="TextureRect" parent="Root/Split/P1Panel/Layout/HandBar/NextCard/NextWrap"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 90)
+expand_mode = 1
+stretch_mode = 5
+size_flags_horizontal = 3
+size_flags_vertical = 1
 
 [node name="P2Panel" type="Control" parent="Root/Split"]
 layout_mode = 2
@@ -128,17 +115,11 @@ theme_override_constants/separation = 12
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ElixirPlaceholder" type="PanelContainer" parent="Root/Split/P2Panel/Layout"]
+[node name="ElixirBarWidget" parent="Root/Split/P2Panel/Layout" instance=ExtResource("1")]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 1
 custom_minimum_size = Vector2(0, 56)
-
-[node name="ElixirLabel" type="Label" parent="Root/Split/P2Panel/Layout/ElixirPlaceholder"]
-layout_mode = 2
-text = "ELIXIR (10-seg widget goes here)"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="HandBar" type="HBoxContainer" parent="Root/Split/P2Panel/Layout"]
 layout_mode = 2
@@ -147,33 +128,17 @@ size_flags_horizontal = 3
 size_flags_vertical = 1
 theme_override_constants/separation = 10
 
-[node name="Card1" type="Button" parent="Root/Split/P2Panel/Layout/HandBar"]
+[node name="Card1" parent="Root/Split/P2Panel/Layout/HandBar" instance=ExtResource("2")]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 150)
-size_flags_horizontal = 3
-size_flags_vertical = 1
-text = "Card 1\n(3)"
 
-[node name="Card2" type="Button" parent="Root/Split/P2Panel/Layout/HandBar"]
+[node name="Card2" parent="Root/Split/P2Panel/Layout/HandBar" instance=ExtResource("2")]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 150)
-size_flags_horizontal = 3
-size_flags_vertical = 1
-text = "Card 2\n(3)"
 
-[node name="Card3" type="Button" parent="Root/Split/P2Panel/Layout/HandBar"]
+[node name="Card3" parent="Root/Split/P2Panel/Layout/HandBar" instance=ExtResource("2")]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 150)
-size_flags_horizontal = 3
-size_flags_vertical = 1
-text = "Card 3\n(2)"
 
-[node name="Card4" type="Button" parent="Root/Split/P2Panel/Layout/HandBar"]
+[node name="Card4" parent="Root/Split/P2Panel/Layout/HandBar" instance=ExtResource("2")]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 150)
-size_flags_horizontal = 3
-size_flags_vertical = 1
-text = "Card 4\n(5)"
 
 [node name="NextCard" type="PanelContainer" parent="Root/Split/P2Panel/Layout/HandBar"]
 layout_mode = 2
@@ -195,6 +160,10 @@ layout_mode = 2
 text = "NEXT"
 horizontal_alignment = 1
 
-[node name="NextIcon" type="PanelContainer" parent="Root/Split/P2Panel/Layout/HandBar/NextCard/NextWrap"]
+[node name="NextIcon" type="TextureRect" parent="Root/Split/P2Panel/Layout/HandBar/NextCard/NextWrap"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 90)
+expand_mode = 1
+stretch_mode = 5
+size_flags_horizontal = 3
+size_flags_vertical = 1
