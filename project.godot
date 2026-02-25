@@ -12,6 +12,7 @@ config_version=5
 
 config/name="khkroyale"
 config/description="game for uw madison 2026 engineering expo"
+run/main_scene="uid://bw8vm1318galh"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -22,4 +23,3 @@ config/icon="res://icon.svg"
 [rendering]
 
 rendering_device/driver.windows="d3d12"
-environment/defaults/default_clear_color=Color(0.5411765, 1, 0, 1)

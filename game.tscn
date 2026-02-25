@@ -1,22 +1,57 @@
 [gd_scene format=3 uid="uid://bw8vm1318galh"]
 
 [ext_resource type="PackedScene" uid="uid://peili7210lj2" path="res://resource_node_tower.tscn" id="1_80nbo"]
+[ext_resource type="Texture2D" uid="uid://c2oy56aqdldsl" path="res://grass.jpg" id="2_e2o6t"]
+[ext_resource type="PackedScene" uid="uid://boo2rhk6murt8" path="res://resource_node_water.tscn" id="3_feb5d"]
+[ext_resource type="Texture2D" uid="uid://dg7l44v7sm3d0" path="res://bridge.webp" id="4_fc0e3"]
 
 [node name="Game" type="Node2D" unique_id=698802250]
 
-[node name="ResourceNode_Tower" parent="." unique_id=854843623 instance=ExtResource("1_80nbo")]
+[node name="Background" type="Sprite2D" parent="." unique_id=974062420]
+z_index = -4096
+scale = Vector2(2.4510639, 1.6079404)
+texture = ExtResource("2_e2o6t")
+centered = false
 
-[node name="ResourceNode_Tower2" parent="." unique_id=153755378 instance=ExtResource("1_80nbo")]
-position = Vector2(-3, 394)
+[node name="Princess_Tower1_P1" parent="." unique_id=854843623 instance=ExtResource("1_80nbo")]
+position = Vector2(200, 10)
 
-[node name="ResourceNode_Tower3" parent="." unique_id=960881851 instance=ExtResource("1_80nbo")]
-position = Vector2(188, 204)
+[node name="Princess_Tower2_P1" parent="." unique_id=153755378 instance=ExtResource("1_80nbo")]
+position = Vector2(200, 420)
 
-[node name="ResourceNode_Tower4" parent="." unique_id=2040910090 instance=ExtResource("1_80nbo")]
-position = Vector2(888, -2)
+[node name="King_Tower_P1" parent="." unique_id=960881851 instance=ExtResource("1_80nbo")]
+position = Vector2(-20, 215)
 
-[node name="ResourceNode_Tower5" parent="." unique_id=1288531089 instance=ExtResource("1_80nbo")]
-position = Vector2(887, 364)
+[node name="Princess_Tower1_P2" parent="." unique_id=2040910090 instance=ExtResource("1_80nbo")]
+position = Vector2(670, 10)
 
-[node name="ResourceNode_Tower6" parent="." unique_id=396406859 instance=ExtResource("1_80nbo")]
-position = Vector2(645, 206)
+[node name="Princess_Tower2_P2" parent="." unique_id=1288531089 instance=ExtResource("1_80nbo")]
+position = Vector2(670, 420)
+
+[node name="King_Tower_P2" parent="." unique_id=396406859 instance=ExtResource("1_80nbo")]
+position = Vector2(910, 207)
+
+[node name="Water1" parent="." unique_id=1092618421 instance=ExtResource("3_feb5d")]
+position = Vector2(560, 108)
+rotation = 1.5707964
+scale = Vector2(0.4, 0.2)
+
+[node name="Water2" parent="." unique_id=1475204150 instance=ExtResource("3_feb5d")]
+position = Vector2(560, 540)
+rotation = 1.5707964
+scale = Vector2(0.4, 0.2)
+
+[node name="Water3" parent="." unique_id=598572292 instance=ExtResource("3_feb5d")]
+position = Vector2(560, 324.00003)
+rotation = 1.5707964
+scale = Vector2(0.2, 0.2)
+
+[node name="Bridge1" type="Sprite2D" parent="." unique_id=212232137]
+position = Vector2(560, 404.875)
+scale = Vector2(0.046750005, 0.027124992)
+texture = ExtResource("4_fc0e3")
+
+[node name="Bridge2" type="Sprite2D" parent="." unique_id=940295763]
+position = Vector2(560, 243)
+scale = Vector2(0.046750005, 0.027124992)
+texture = ExtResource("4_fc0e3")
