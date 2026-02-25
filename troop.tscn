@@ -4,8 +4,67 @@
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6da2i"]
 atlas = ExtResource("1_0o557")
-region = Rect2(10, 30, 600, 50)
+region = Rect2(10, 10, 600, 600)
 margin = Rect2(10, 0, 0, 0)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_0o557"]
+radius = 41.04875
+
+[sub_resource type="Animation" id="Animation_6da2i"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame_coords")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2i(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_37opx"]
+resource_name = "swing"
+loop_mode = 1
+step = 0.125
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame_coords")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2i(0, 5), Vector2i(1, 5), Vector2i(2, 5), Vector2i(3, 5), Vector2i(4, 5), Vector2i(5, 5), Vector2i(6, 5), Vector2i(7, 5)]
+}
+
+[sub_resource type="Animation" id="Animation_6ntns"]
+resource_name = "walk"
+loop_mode = 1
+step = 0.125
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite2D:frame_coords")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0), Vector2i(4, 0), Vector2i(5, 0), Vector2i(6, 0), Vector2i(7, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_e62a6"]
+_data = {
+&"RESET": SubResource("Animation_6da2i"),
+&"swing": SubResource("Animation_37opx"),
+&"walk": SubResource("Animation_6ntns")
+}
 
 [node name="Troop" type="Node2D" unique_id=2077455120]
 
@@ -13,4 +72,13 @@ margin = Rect2(10, 0, 0, 0)
 texture_filter = 1
 texture = SubResource("AtlasTexture_6da2i")
 hframes = 8
-frame = 6
+vframes = 8
+
+[node name="Area2D" type="Area2D" parent="." unique_id=116205238]
+
+[node name="HitArea" type="CollisionShape2D" parent="Area2D" unique_id=1184974264]
+position = Vector2(0, 7)
+shape = SubResource("CircleShape2D_0o557")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=125469094]
+libraries/ = SubResource("AnimationLibrary_e62a6")
