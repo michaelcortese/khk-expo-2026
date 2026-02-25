@@ -1,0 +1,200 @@
+[gd_scene format=3 uid="uid://hud_segmented_hand_standalone"]
+
+[node name="HUD" type="CanvasLayer"]
+layer = 1
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Split" type="HBoxContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+
+[node name="P1Panel" type="Control" parent="Root/Split"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Layout" type="VBoxContainer" parent="Root/Split/P1Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Spacer" type="Control" parent="Root/Split/P1Panel/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ElixirPlaceholder" type="PanelContainer" parent="Root/Split/P1Panel/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+custom_minimum_size = Vector2(0, 56)
+
+[node name="ElixirLabel" type="Label" parent="Root/Split/P1Panel/Layout/ElixirPlaceholder"]
+layout_mode = 2
+text = "ELIXIR (10-seg widget goes here)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HandBar" type="HBoxContainer" parent="Root/Split/P1Panel/Layout"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 160)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_constants/separation = 10
+
+[node name="Card1" type="Button" parent="Root/Split/P1Panel/Layout/HandBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Card 1\n(3)"
+
+[node name="Card2" type="Button" parent="Root/Split/P1Panel/Layout/HandBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Card 2\n(3)"
+
+[node name="Card3" type="Button" parent="Root/Split/P1Panel/Layout/HandBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Card 3\n(2)"
+
+[node name="Card4" type="Button" parent="Root/Split/P1Panel/Layout/HandBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Card 4\n(5)"
+
+[node name="NextCard" type="PanelContainer" parent="Root/Split/P1Panel/Layout/HandBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(84, 0)
+size_flags_horizontal = 1
+size_flags_vertical = 1
+
+[node name="NextWrap" type="VBoxContainer" parent="Root/Split/P1Panel/Layout/HandBar/NextCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="NextLabel" type="Label" parent="Root/Split/P1Panel/Layout/HandBar/NextCard/NextWrap"]
+layout_mode = 2
+text = "NEXT"
+horizontal_alignment = 1
+
+[node name="NextIcon" type="PanelContainer" parent="Root/Split/P1Panel/Layout/HandBar/NextCard/NextWrap"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 90)
+
+[node name="P2Panel" type="Control" parent="Root/Split"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Layout" type="VBoxContainer" parent="Root/Split/P2Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Spacer" type="Control" parent="Root/Split/P2Panel/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ElixirPlaceholder" type="PanelContainer" parent="Root/Split/P2Panel/Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+custom_minimum_size = Vector2(0, 56)
+
+[node name="ElixirLabel" type="Label" parent="Root/Split/P2Panel/Layout/ElixirPlaceholder"]
+layout_mode = 2
+text = "ELIXIR (10-seg widget goes here)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HandBar" type="HBoxContainer" parent="Root/Split/P2Panel/Layout"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 160)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_constants/separation = 10
+
+[node name="Card1" type="Button" parent="Root/Split/P2Panel/Layout/HandBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Card 1\n(3)"
+
+[node name="Card2" type="Button" parent="Root/Split/P2Panel/Layout/HandBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Card 2\n(3)"
+
+[node name="Card3" type="Button" parent="Root/Split/P2Panel/Layout/HandBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Card 3\n(2)"
+
+[node name="Card4" type="Button" parent="Root/Split/P2Panel/Layout/HandBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+text = "Card 4\n(5)"
+
+[node name="NextCard" type="PanelContainer" parent="Root/Split/P2Panel/Layout/HandBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(84, 0)
+size_flags_horizontal = 1
+size_flags_vertical = 1
+
+[node name="NextWrap" type="VBoxContainer" parent="Root/Split/P2Panel/Layout/HandBar/NextCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="NextLabel" type="Label" parent="Root/Split/P2Panel/Layout/HandBar/NextCard/NextWrap"]
+layout_mode = 2
+text = "NEXT"
+horizontal_alignment = 1
+
+[node name="NextIcon" type="PanelContainer" parent="Root/Split/P2Panel/Layout/HandBar/NextCard/NextWrap"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 90)
