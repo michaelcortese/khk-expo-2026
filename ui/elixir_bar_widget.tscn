@@ -1,0 +1,114 @@
+[gd_scene format=3 uid="uid://elixir_bar_ui_pack"]
+
+[ext_resource type="Script" path="res://ui/elixir_bar.gd" id="1"]
+
+[node name="ElixirBarWidget" type="Control"]
+custom_minimum_size = Vector2(0, 56)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+script = ExtResource("1")
+
+[node name="Segments" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+# Placeholder segments; script will rebuild to max_elixir if needed.
+[node name="S1" type="ColorRect" parent="Segments"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+color = Color(0.75, 0.2, 1.0, 1.0)
+
+[node name="S2" type="ColorRect" parent="Segments"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+color = Color(0.75, 0.2, 1.0, 1.0)
+
+[node name="S3" type="ColorRect" parent="Segments"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+color = Color(0.75, 0.2, 1.0, 1.0)
+
+[node name="S4" type="ColorRect" parent="Segments"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+color = Color(0.75, 0.2, 1.0, 1.0)
+
+[node name="S5" type="ColorRect" parent="Segments"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+color = Color(0.75, 0.2, 1.0, 1.0)
+
+[node name="S6" type="ColorRect" parent="Segments"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+color = Color(0.75, 0.2, 1.0, 1.0)
+
+[node name="S7" type="ColorRect" parent="Segments"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+color = Color(0.75, 0.2, 1.0, 1.0)
+
+[node name="S8" type="ColorRect" parent="Segments"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+color = Color(0.75, 0.2, 1.0, 1.0)
+
+[node name="S9" type="ColorRect" parent="Segments"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+color = Color(0.75, 0.2, 1.0, 1.0)
+
+[node name="S10" type="ColorRect" parent="Segments"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_horizontal = 3
+size_flags_vertical = 1
+color = Color(0.75, 0.2, 1.0, 1.0)
+
+[node name="PipIcon" type="TextureRect" parent="."]
+layout_mode = 0
+anchors_preset = 2
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = -40.0
+offset_right = 22.0
+offset_bottom = -18.0
+expand_mode = 1
+stretch_mode = 4
+
+[node name="ValueLabel" type="Label" parent="PipIcon"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "0"
