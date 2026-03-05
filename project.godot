@@ -12,9 +12,17 @@ config_version=5
 
 config/name="khkroyale"
 config/description="game for uw madison 2026 engineering expo"
-run/main_scene="uid://bw8vm1318galh"
+run/main_scene="res://game.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=1024
+window/size/mode=0
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [physics]
 

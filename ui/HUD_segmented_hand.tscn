@@ -1,14 +1,24 @@
-[gd_scene format=3 uid="uid://hud_segmented_hand_pack"]
+[gd_scene format=3 uid="uid://dc75djv2ke5ff"]
 
-[ext_resource type="PackedScene" path="res://ui/elixir_bar_widget.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://btfv3lbenay82" path="res://ui/elixir_bar_widget.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://ui/card_slot.tscn" id="2"]
-[ext_resource type="Script" path="res://ui/hud.gd" id="3"]
+[ext_resource type="Script" uid="uid://cio6ef05kyxke" path="res://ui/hud.gd" id="3"]
 
-[node name="HUD" type="CanvasLayer"]
-layer = 1
+; ============================================================
+; HUD — CanvasLayer (screen-space overlay)
+; Layout (1280 x 1024 viewport):
+;   TimerBar  — full width, 45 px tall, anchored to top
+;   BottomBar — full width, 220 px tall, anchored to bottom
+;     P1Panel (left 50%):  VBox → [P1Cards HBox] + [P1ElixirBar]
+;     P2Panel (right 50%): VBox → [P2Cards HBox RTL] + [P2ElixirBar]
+;     DoubleElixirBadge — centred, hidden until 1:00 remaining
+; ============================================================
+
+[node name="HUD" type="CanvasLayer" unique_id=710024051]
 script = ExtResource("3")
 
-[node name="Root" type="Control" parent="."]
+; ---------- Root control (full viewport) ----------
+[node name="Root" type="Control" parent="." unique_id=128783027]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -17,65 +27,41 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Split" type="HBoxContainer" parent="Root"]
+; ---------- Timer bar — top strip ----------
+[node name="TimerBar" type="ColorRect" parent="Root" unique_id=2200000001]
+layout_mode = 1
+anchor_right = 1.0
+offset_bottom = 45.0
+color = Color(0.04, 0.04, 0.04, 0.92)
+
+[node name="TimerLabel" type="Label" parent="Root/TimerBar" unique_id=2200000002]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 24
+text = "3:00"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 30
 
-[node name="P1Panel" type="Control" parent="Root/Split"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="Layout" type="VBoxContainer" parent="Root/Split/P1Panel"]
+; ---------- Bottom bar — cards + elixir ----------
+[node name="BottomBar" type="ColorRect" parent="Root" unique_id=2200000003]
 layout_mode = 1
-anchors_preset = 15
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 12
+offset_top = -220.0
+color = Color(0.07, 0.07, 0.09, 0.94)
 
-[node name="Spacer" type="Control" parent="Root/Split/P1Panel/Layout"]
-layout_mode = 2
-size_flags_vertical = 3
+; ---- P1 Panel (left half) ----
+[node name="P1Panel" type="Control" parent="Root/BottomBar" unique_id=2200000010]
+layout_mode = 1
+anchor_right = 0.5
+anchor_bottom = 1.0
 
-[node name="ElixirBarWidget" parent="Root/Split/P1Panel/Layout" instance=ExtResource("1")]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 1
-custom_minimum_size = Vector2(0, 56)
-
-[node name="HandBar" type="HBoxContainer" parent="Root/Split/P1Panel/Layout"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 160)
-size_flags_horizontal = 3
-size_flags_vertical = 1
-theme_override_constants/separation = 10
-
-[node name="Card1" parent="Root/Split/P1Panel/Layout/HandBar" instance=ExtResource("2")]
-layout_mode = 2
-
-[node name="Card2" parent="Root/Split/P1Panel/Layout/HandBar" instance=ExtResource("2")]
-layout_mode = 2
-
-[node name="Card3" parent="Root/Split/P1Panel/Layout/HandBar" instance=ExtResource("2")]
-layout_mode = 2
-
-[node name="Card4" parent="Root/Split/P1Panel/Layout/HandBar" instance=ExtResource("2")]
-layout_mode = 2
-
-[node name="NextCard" type="PanelContainer" parent="Root/Split/P1Panel/Layout/HandBar"]
-layout_mode = 2
-custom_minimum_size = Vector2(84, 0)
-size_flags_horizontal = 1
-size_flags_vertical = 1
-
-[node name="NextWrap" type="VBoxContainer" parent="Root/Split/P1Panel/Layout/HandBar/NextCard"]
+[node name="P1VBox" type="VBoxContainer" parent="Root/BottomBar/P1Panel" unique_id=2200000011]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -83,70 +69,49 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
+theme_override_constants/separation = 6
 
-[node name="NextLabel" type="Label" parent="Root/Split/P1Panel/Layout/HandBar/NextCard/NextWrap"]
-layout_mode = 2
-text = "NEXT"
-horizontal_alignment = 1
-
-[node name="NextIcon" type="TextureRect" parent="Root/Split/P1Panel/Layout/HandBar/NextCard/NextWrap"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 90)
-expand_mode = 1
-stretch_mode = 5
-size_flags_horizontal = 3
-size_flags_vertical = 1
-
-[node name="P2Panel" type="Control" parent="Root/Split"]
+[node name="P1Cards" type="HBoxContainer" parent="Root/BottomBar/P1Panel/P1VBox" unique_id=2200000012]
+custom_minimum_size = Vector2(0, 148)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
+theme_override_constants/separation = 5
 
-[node name="Layout" type="VBoxContainer" parent="Root/Split/P2Panel"]
+[node name="P1Card1" parent="Root/BottomBar/P1Panel/P1VBox/P1Cards" unique_id=2200000013 instance=ExtResource("2")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P1Card2" parent="Root/BottomBar/P1Panel/P1VBox/P1Cards" unique_id=2200000014 instance=ExtResource("2")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P1Card3" parent="Root/BottomBar/P1Panel/P1VBox/P1Cards" unique_id=2200000015 instance=ExtResource("2")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P1Card4" parent="Root/BottomBar/P1Panel/P1VBox/P1Cards" unique_id=2200000016 instance=ExtResource("2")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+; Up-Next preview (disabled, slightly blue-tinted, narrower)
+[node name="P1UpNext" parent="Root/BottomBar/P1Panel/P1VBox/P1Cards" unique_id=2200000017 instance=ExtResource("2")]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+size_flags_horizontal = 0
+disabled = true
+self_modulate = Color(0.72, 0.82, 1.0, 1.0)
+
+[node name="P1ElixirBar" parent="Root/BottomBar/P1Panel/P1VBox" unique_id=2200000018 instance=ExtResource("1")]
+layout_mode = 2
+
+; ---- P2 Panel (right half, mirrored via RTL) ----
+[node name="P2Panel" type="Control" parent="Root/BottomBar" unique_id=2200000020]
 layout_mode = 1
-anchors_preset = 15
+anchor_left = 0.5
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 12
 
-[node name="Spacer" type="Control" parent="Root/Split/P2Panel/Layout"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="ElixirBarWidget" parent="Root/Split/P2Panel/Layout" instance=ExtResource("1")]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 1
-custom_minimum_size = Vector2(0, 56)
-
-[node name="HandBar" type="HBoxContainer" parent="Root/Split/P2Panel/Layout"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 160)
-size_flags_horizontal = 3
-size_flags_vertical = 1
-theme_override_constants/separation = 10
-
-[node name="Card1" parent="Root/Split/P2Panel/Layout/HandBar" instance=ExtResource("2")]
-layout_mode = 2
-
-[node name="Card2" parent="Root/Split/P2Panel/Layout/HandBar" instance=ExtResource("2")]
-layout_mode = 2
-
-[node name="Card3" parent="Root/Split/P2Panel/Layout/HandBar" instance=ExtResource("2")]
-layout_mode = 2
-
-[node name="Card4" parent="Root/Split/P2Panel/Layout/HandBar" instance=ExtResource("2")]
-layout_mode = 2
-
-[node name="NextCard" type="PanelContainer" parent="Root/Split/P2Panel/Layout/HandBar"]
-layout_mode = 2
-custom_minimum_size = Vector2(84, 0)
-size_flags_horizontal = 1
-size_flags_vertical = 1
-
-[node name="NextWrap" type="VBoxContainer" parent="Root/Split/P2Panel/Layout/HandBar/NextCard"]
+[node name="P2VBox" type="VBoxContainer" parent="Root/BottomBar/P2Panel" unique_id=2200000021]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -154,16 +119,59 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
+theme_override_constants/separation = 6
 
-[node name="NextLabel" type="Label" parent="Root/Split/P2Panel/Layout/HandBar/NextCard/NextWrap"]
+; layout_direction = 3 (RTL) mirrors the card order visually
+[node name="P2Cards" type="HBoxContainer" parent="Root/BottomBar/P2Panel/P2VBox" unique_id=2200000022]
+custom_minimum_size = Vector2(0, 148)
 layout_mode = 2
-text = "NEXT"
-horizontal_alignment = 1
-
-[node name="NextIcon" type="TextureRect" parent="Root/Split/P2Panel/Layout/HandBar/NextCard/NextWrap"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 90)
-expand_mode = 1
-stretch_mode = 5
 size_flags_horizontal = 3
-size_flags_vertical = 1
+theme_override_constants/separation = 5
+layout_direction = 3
+
+[node name="P2Card1" parent="Root/BottomBar/P2Panel/P2VBox/P2Cards" unique_id=2200000023 instance=ExtResource("2")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P2Card2" parent="Root/BottomBar/P2Panel/P2VBox/P2Cards" unique_id=2200000024 instance=ExtResource("2")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P2Card3" parent="Root/BottomBar/P2Panel/P2VBox/P2Cards" unique_id=2200000025 instance=ExtResource("2")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P2Card4" parent="Root/BottomBar/P2Panel/P2VBox/P2Cards" unique_id=2200000026 instance=ExtResource("2")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="P2UpNext" parent="Root/BottomBar/P2Panel/P2VBox/P2Cards" unique_id=2200000027 instance=ExtResource("2")]
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+size_flags_horizontal = 0
+disabled = true
+self_modulate = Color(1.0, 0.82, 0.72, 1.0)
+
+[node name="P2ElixirBar" parent="Root/BottomBar/P2Panel/P2VBox" unique_id=2200000028 instance=ExtResource("1")]
+layout_mode = 2
+
+; ---- Double-Elixir badge — centred in BottomBar, hidden until 1:00 ----
+[node name="DoubleElixirBadge" type="PanelContainer" parent="Root/BottomBar" unique_id=2200000030]
+visible = false
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -44.0
+offset_right = 44.0
+offset_top = -34.0
+offset_bottom = 34.0
+
+[node name="DoubleLabel" type="Label" parent="Root/BottomBar/DoubleElixirBadge" unique_id=2200000031]
+layout_mode = 2
+text = "×2"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 38
+theme_override_colors/font_color = Color(0.85, 0.30, 1.0, 1.0)

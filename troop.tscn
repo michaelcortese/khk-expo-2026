@@ -1,15 +1,13 @@
 [gd_scene format=3 uid="uid://dkkygjw4ghfip"]
 
-[ext_resource type="Texture2D" uid="uid://back0k1dkgn8j" path="res://MessyAssets/Templar_Knight_Black.png" id="1_0o557"]
+[ext_resource type="Script" path="res://scripts/troop_unit.gd" id="1_troop"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_6da2i"]
-atlas = ExtResource("1_0o557")
-region = Rect2(10, 30, 600, 50)
-margin = Rect2(10, 0, 0, 0)
+[sub_resource type="CircleShape2D" id="CircleShape2D_1"]
+radius = 14.0
 
-[node name="Troop" type="Node2D" unique_id=2077455120]
+[node name="Troop" type="CharacterBody2D" script=ExtResource("1_troop")]
+collision_layer = 2
+collision_mask = 0
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=418714313]
-texture_filter = 1
-texture = SubResource("AtlasTexture_6da2i")
-hframes = 8
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_1")

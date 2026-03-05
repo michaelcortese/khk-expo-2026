@@ -1,17 +1,27 @@
-[gd_scene format=3 uid="uid://bw8vm1318galh"]
+[gd_scene format=3 uid="uid://cowpvub3t3vp2"]
 
-[ext_resource type="PackedScene" uid="uid://peili7210lj2" path="res://resource_node_tower.tscn" id="1_80nbo"]
+[ext_resource type="PackedScene" path="res://resource_node_tower.tscn" id="1_80nbo"]
 [ext_resource type="Texture2D" uid="uid://c2oy56aqdldsl" path="res://grass.jpg" id="2_e2o6t"]
 [ext_resource type="PackedScene" uid="uid://boo2rhk6murt8" path="res://resource_node_water.tscn" id="3_feb5d"]
 [ext_resource type="Texture2D" uid="uid://dg7l44v7sm3d0" path="res://bridge.webp" id="4_fc0e3"]
+[ext_resource type="Script" path="res://scripts/game_manager.gd" id="5_gm"]
+[ext_resource type="PackedScene" uid="uid://dc75djv2ke5ff" path="res://ui/HUD_segmented_hand.tscn" id="6_hud"]
+[ext_resource type="Script" path="res://scripts/field_bg.gd" id="7_fbg"]
 
-[node name="Game" type="Node2D" unique_id=698802250]
+[node name="Game" type="Node2D" unique_id=698802250 script=ExtResource("5_gm")]
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=100000001]
+position = Vector2(480, 320)
+zoom = Vector2(1.1, 1.1)
 
 [node name="Background" type="Sprite2D" parent="." unique_id=974062420]
 z_index = -4096
-scale = Vector2(2.4510639, 1.6079404)
+scale = Vector2(2.7191489, 1.6004963)
 texture = ExtResource("2_e2o6t")
 centered = false
+
+[node name="FieldBg" type="Node2D" parent="." unique_id=100000002 script=ExtResource("7_fbg")]
+z_index = -4095
 
 [node name="Princess_Tower1_P1" parent="." unique_id=854843623 instance=ExtResource("1_80nbo")]
 position = Vector2(200, 10)
@@ -47,7 +57,7 @@ rotation = 1.5707964
 scale = Vector2(0.2, 0.2)
 
 [node name="Bridge1" type="Sprite2D" parent="." unique_id=212232137]
-position = Vector2(560, 404.875)
+position = Vector2(560, 405.00003)
 scale = Vector2(0.046750005, 0.027124992)
 texture = ExtResource("4_fc0e3")
 
@@ -55,3 +65,5 @@ texture = ExtResource("4_fc0e3")
 position = Vector2(560, 243)
 scale = Vector2(0.046750005, 0.027124992)
 texture = ExtResource("4_fc0e3")
+
+[node name="HUD" parent="." unique_id=2093197956 instance=ExtResource("6_hud")]
