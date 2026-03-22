@@ -1,67 +1,28 @@
-[gd_scene format=3 uid="uid://cowpvub3t3vp2"]
+[gd_scene format=3 uid="uid://coqc5t61aq5uq"]
 
-[ext_resource type="PackedScene" path="res://resource_node_tower.tscn" id="1_80nbo"]
-[ext_resource type="Texture2D" uid="uid://c2oy56aqdldsl" path="res://grass.jpg" id="2_e2o6t"]
-[ext_resource type="PackedScene" uid="uid://boo2rhk6murt8" path="res://resource_node_water.tscn" id="3_feb5d"]
-[ext_resource type="Texture2D" uid="uid://dg7l44v7sm3d0" path="res://bridge.webp" id="4_fc0e3"]
-[ext_resource type="PackedScene" uid="uid://dc75djv2ke5ff" path="res://ui/HUD_segmented_hand.tscn" id="6_hud"]
+[ext_resource type="Script" uid="uid://c3tp74tbspyu2" path="res://scripts/game_manager.gd" id="1_gm"]
+[ext_resource type="PackedScene" uid="uid://1snudtp457yt" path="res://tower.tscn" id="2_e2o6t"]
 
-[node name="Game" type="Node2D" unique_id=698802250]
+[node name="Game" type="Node2D" unique_id=632213616]
+script = ExtResource("1_gm")
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=100000001]
-position = Vector2(1949, 498.99997)
-scale = Vector2(65.28845, 3.483008)
-zoom = Vector2(1.06, 1.06)
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1433869809]
+position = Vector2(480, 240)
 
-[node name="Background" type="Sprite2D" parent="." unique_id=974062420]
-z_index = -4096
-position = Vector2(1348, 25)
-scale = Vector2(2.47, 2.29)
-texture = ExtResource("2_e2o6t")
-centered = false
+[node name="King_Tower_P1" parent="." unique_id=1258321266 instance=ExtResource("2_e2o6t")]
+position = Vector2(20, 240)
 
-[node name="FieldBg" type="Node2D" parent="Background" unique_id=100000002]
-z_index = -4095
-position = Vector2(-1.1032864, -93.720924)
-scale = Vector2(0.36776212, 0.62480617)
+[node name="Princess_Tower1_P1" parent="." unique_id=957856165 instance=ExtResource("2_e2o6t")]
+position = Vector2(200, 80)
 
-[node name="Princess_Tower1_P1" parent="Background" unique_id=854843623 instance=ExtResource("1_80nbo")]
-position = Vector2(126.315765, 79.475975)
-scale = Vector2(0.36776212, 0.62480617)
+[node name="Princess_Tower2_P1" parent="." unique_id=1908782305 instance=ExtResource("2_e2o6t")]
+position = Vector2(200, 400)
 
-[node name="Princess_Tower2_P1" parent="Background" unique_id=153755378 instance=ExtResource("1_80nbo")]
-position = Vector2(121.05263, 337.9913)
-scale = Vector2(0.36776212, 0.62480617)
+[node name="King_Tower_P2" parent="." unique_id=768260525 instance=ExtResource("2_e2o6t")]
+position = Vector2(900, 240)
 
-[node name="King_Tower_P1" parent="Background" unique_id=960881851 instance=ExtResource("1_80nbo")]
-position = Vector2(27.935213, 204.36682)
-scale = Vector2(0.36776212, 0.62480617)
+[node name="Princess_Tower1_P2" parent="." unique_id=321096686 instance=ExtResource("2_e2o6t")]
+position = Vector2(700, 80)
 
-[node name="Princess_Tower1_P2" parent="Background" unique_id=2040910090 instance=ExtResource("1_80nbo")]
-position = Vector2(361.53845, 71.61572)
-scale = Vector2(0.36776212, 0.62480617)
-
-[node name="Princess_Tower2_P2" parent="Background" unique_id=1288531089 instance=ExtResource("1_80nbo")]
-position = Vector2(357.08496, 338.42798)
-scale = Vector2(0.36776212, 0.62480617)
-
-[node name="King_Tower_P2" parent="Background" unique_id=396406859 instance=ExtResource("1_80nbo")]
-position = Vector2(433.22375, 203.06201)
-scale = Vector2(0.36776212, 0.62480617)
-
-[node name="Water3" parent="Background" unique_id=598572292 instance=ExtResource("3_feb5d")]
-position = Vector2(224.69637, 199.56335)
-rotation = 1.5707964
-scale = Vector2(0.775, 0.094)
-
-[node name="Bridge1" type="Sprite2D" parent="Background" unique_id=212232137]
-position = Vector2(224.69632, 337.99124)
-scale = Vector2(0.027, 0.017)
-texture = ExtResource("4_fc0e3")
-
-[node name="Bridge3" type="Sprite2D" parent="Background" unique_id=1755118634]
-position = Vector2(226.31577, 82.532745)
-scale = Vector2(0.027, 0.017)
-texture = ExtResource("4_fc0e3")
-
-[node name="HUD" parent="." unique_id=2093197956 instance=ExtResource("6_hud")]
+[node name="Princess_Tower2_P2" parent="." unique_id=1541098631 instance=ExtResource("2_e2o6t")]
+position = Vector2(700, 400)

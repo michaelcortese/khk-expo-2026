@@ -1,141 +1,66 @@
 class_name GameManager
 extends Node2D
 
-## Main orchestrator for KHK Royale.
-## Attach to the root Game node in game.tscn.
+const P1_KING_POS := Vector2(900, 240)
+const P2_KING_POS := Vector2(60,  240)
 
-# ---------------------------------------------------------------------------
-# Signals (cross-system communication)
-# ---------------------------------------------------------------------------
-signal timer_updated(time_left: float)
-signal double_elixir_started()
+const ELIXIR_RATE := 1.0 / 2.8
+const ELIXIR_MAX  := 10.0
 
-# ---------------------------------------------------------------------------
-# Exports
-# ---------------------------------------------------------------------------
-@export var game_duration: float    = 180.0   # 3:00
-@export var p1_joy_device: int      = 0
-@export var p2_joy_device: int      = 1
-
-# ---------------------------------------------------------------------------
-# Elixir constants
-# ---------------------------------------------------------------------------
-const ELIXIR_RATE_NORMAL := 1.0 / 2.8   # +1 per 2.8 s
-const ELIXIR_RATE_DOUBLE := 1.0 / 1.4   # +1 per 1.4 s (double-elixir mode)
-
-# ---------------------------------------------------------------------------
-# State
-# ---------------------------------------------------------------------------
-@onready var hud: HUD = $HUD
-
-var p1_elixir: float  = 0.0
-var p2_elixir: float  = 0.0
-var double_elixir: bool = false
-var game_timer: float = 0.0
-var game_over: bool   = false
-var p1_crowns: int    = 0
-var p2_crowns: int    = 0
+var p1_elixir: float = 5.0
+var p2_elixir: float = 5.0
 
 var p1_deck: Deck
 var p2_deck: Deck
-var p1_controller: PlayerController
-var p2_controller: PlayerController
 
 var _troop_scene: PackedScene
+var _hud: HUD
 
-var _p1_king: Tower
-var _p1_princess1: Tower
-var _p1_princess2: Tower
-var _p2_king: Tower
-var _p2_princess1: Tower
-var _p2_princess2: Tower
-
-# ---------------------------------------------------------------------------
-# Init
-# ---------------------------------------------------------------------------
 func _ready() -> void:
-	_troop_scene = preload("res://troop.tscn")
-	_setup_towers()
+	_troop_scene = load("res://troop.tscn")
 	_setup_decks()
+	_tag_towers()
 	_setup_controllers()
-	_update_hud_hands()
+	_setup_hud()
+	_fit_camera_above_hud()
 
-	# Wire signals → HUD
-	timer_updated.connect(hud._on_timer_updated)
-	double_elixir_started.connect(hud._on_double_elixir_started)
-
-	# Show initial timer display
-	timer_updated.emit(game_duration)
-
-# ---------------------------------------------------------------------------
-# Towers
-# ---------------------------------------------------------------------------
-func _setup_towers() -> void:
-	_p1_king      = get_node_or_null("King_Tower_P1")      as Tower
-	_p1_princess1 = get_node_or_null("Princess_Tower1_P1") as Tower
-	_p1_princess2 = get_node_or_null("Princess_Tower2_P1") as Tower
-	_p2_king      = get_node_or_null("King_Tower_P2")      as Tower
-	_p2_princess1 = get_node_or_null("Princess_Tower1_P2") as Tower
-	_p2_princess2 = get_node_or_null("Princess_Tower2_P2") as Tower
-
-	_init_tower(_p1_king,      0, true,  2400)
-	_init_tower(_p1_princess1, 0, false, 1400)
-	_init_tower(_p1_princess2, 0, false, 1400)
-	_init_tower(_p2_king,      1, true,  2400)
-	_init_tower(_p2_princess1, 1, false, 1400)
-	_init_tower(_p2_princess2, 1, false, 1400)
-
-func _init_tower(tower: Tower, player_idx: int, is_king: bool, hp: int) -> void:
-	if tower == null:
-		return
-	tower.owner_player = player_idx
-	tower.is_king_tower = is_king
-	tower.max_hp        = hp
-	tower.add_to_group("towers")
-	tower.destroyed.connect(_on_tower_destroyed.bind(tower, player_idx, is_king))
-
-# ---------------------------------------------------------------------------
-# Decks
-# ---------------------------------------------------------------------------
+# ── Decks ─────────────────────────────────────────────────────────────────────
 func _setup_decks() -> void:
-	var cards := _make_default_cards()
+	var cards := _make_cards()
 	p1_deck = Deck.new()
 	p1_deck.setup(cards)
 	p2_deck = Deck.new()
 	p2_deck.setup(cards)
 
-func _make_default_cards() -> Array[CardData]:
+func _make_cards() -> Array[CardData]:
 	var list: Array[CardData] = []
 
 	var knight := CardData.new()
-	knight.card_id        = "knight"
-	knight.display_name   = "Knight"
-	knight.cost           = 3
-	knight.troop_type     = CardData.TroopType.KNIGHT
-	knight.max_hp         = 300
-	knight.attack_damage  = 35
-	knight.attack_range   = 55.0
-	knight.attack_speed   = 1.0
-	knight.move_speed     = 80.0
+	knight.card_id       = "knight"
+	knight.display_name  = "Knight"
+	knight.cost          = 3
+	knight.max_hp        = 200
+	knight.attack_damage = 30
+	knight.attack_range  = 55.0
+	knight.attack_speed  = 1.0
+	knight.move_speed    = 80.0
 	list.append(knight)
 
 	var archer := CardData.new()
-	archer.card_id        = "archer"
-	archer.display_name   = "Archer"
-	archer.cost           = 3
-	archer.troop_type     = CardData.TroopType.ARCHER
-	archer.max_hp         = 130
-	archer.attack_damage  = 22
-	archer.attack_range   = 145.0
-	archer.attack_speed   = 1.2
-	archer.move_speed     = 100.0
+	archer.card_id       = "archer"
+	archer.display_name  = "Archer"
+	archer.cost          = 3
+	archer.max_hp        = 130
+	archer.attack_damage = 22
+	archer.attack_range  = 145.0
+	archer.attack_speed  = 1.2
+	archer.move_speed    = 100.0
 	list.append(archer)
 
 	var giant := CardData.new()
 	giant.card_id                = "giant"
 	giant.display_name           = "Giant"
 	giant.cost                   = 5
-	giant.troop_type             = CardData.TroopType.GIANT
 	giant.max_hp                 = 600
 	giant.attack_damage          = 55
 	giant.attack_range           = 55.0
@@ -145,166 +70,196 @@ func _make_default_cards() -> Array[CardData]:
 	list.append(giant)
 
 	var barb := CardData.new()
-	barb.card_id        = "barbarian"
-	barb.display_name   = "Barbarian"
-	barb.cost           = 5
-	barb.troop_type     = CardData.TroopType.BARBARIAN
-	barb.max_hp         = 250
-	barb.attack_damage  = 65
-	barb.attack_range   = 50.0
-	barb.attack_speed   = 1.4
-	barb.move_speed     = 95.0
+	barb.card_id       = "barbarian"
+	barb.display_name  = "Barbarian"
+	barb.cost          = 5
+	barb.max_hp        = 250
+	barb.attack_damage = 65
+	barb.attack_range  = 50.0
+	barb.attack_speed  = 1.4
+	barb.move_speed    = 95.0
 	list.append(barb)
 
 	return list
 
-# ---------------------------------------------------------------------------
-# Controllers
-# ---------------------------------------------------------------------------
+# ── Towers ────────────────────────────────────────────────────────────────────
+var _game_over: bool = false
+
+func _tag_towers() -> void:
+	var defs: Array = [
+		["King_Tower_P1",      0, true ],
+		["Princess_Tower1_P1", 0, false],
+		["Princess_Tower2_P1", 0, false],
+		["King_Tower_P2",      1, true ],
+		["Princess_Tower1_P2", 1, false],
+		["Princess_Tower2_P2", 1, false],
+	]
+	for d in defs:
+		var t := get_node_or_null(d[0])
+		if t:
+			t.set("owner_player",  d[1])
+			t.set("is_king_tower", d[2])
+			t.connect("destroyed", _on_tower_destroyed.bind(t))
+
+# ── Controllers ───────────────────────────────────────────────────────────────
+var _p1_controller: PlayerController
+var _p2_controller: PlayerController
+
 func _setup_controllers() -> void:
-	p1_controller = PlayerController.new()
-	p1_controller.name         = "P1Controller"
-	p1_controller.player_index = 0
-	p1_controller.joy_device   = p1_joy_device
-	p1_controller.cursor_speed = 350.0
-	p1_controller.zone_min     = Vector2(30,  0)
-	p1_controller.zone_max     = Vector2(460, 520)
-	p1_controller.cursor_color = Color(0.0, 0.85, 1.0, 0.85)
-	add_child(p1_controller)
-	p1_controller.card_played.connect(_on_p1_card_played)
+	_p1_controller              = PlayerController.new()
+	_p1_controller.name         = "P1Controller"
+	_p1_controller.player_index = 0
+	_p1_controller.joy_device   = 0
+	_p1_controller.zone_min     = Vector2(60,  0)
+	_p1_controller.zone_max     = Vector2(490, 480)
+	_p1_controller.cursor_color = Color(0.2, 0.6, 1.0, 0.9)
+	add_child(_p1_controller)
+	_p1_controller.card_played.connect(_on_card_played.bind(0))
 
-	p2_controller = PlayerController.new()
-	p2_controller.name         = "P2Controller"
-	p2_controller.player_index = 1
-	p2_controller.joy_device   = p2_joy_device
-	p2_controller.cursor_speed = 350.0
-	p2_controller.zone_min     = Vector2(500, 0)
-	p2_controller.zone_max     = Vector2(960, 520)
-	p2_controller.cursor_color = Color(1.0, 0.45, 0.10, 0.85)
-	add_child(p2_controller)
-	p2_controller.card_played.connect(_on_p2_card_played)
+	_p2_controller              = PlayerController.new()
+	_p2_controller.name         = "P2Controller"
+	_p2_controller.player_index = 1
+	_p2_controller.joy_device   = 1
+	_p2_controller.zone_min     = Vector2(510, 0)
+	_p2_controller.zone_max     = Vector2(900, 480)
+	_p2_controller.cursor_color = Color(1.0, 0.2, 0.2, 0.9)
+	add_child(_p2_controller)
+	_p2_controller.card_played.connect(_on_card_played.bind(1))
 
-# ---------------------------------------------------------------------------
-# Main loop
-# ---------------------------------------------------------------------------
-func _process(delta: float) -> void:
-	if game_over:
+# ── HUD ───────────────────────────────────────────────────────────────────────
+func _setup_hud() -> void:
+	_hud = HUD.new()
+	add_child(_hud)
+
+func _fit_camera_above_hud() -> void:
+	# Screen: 1280x1024. HUD occupies bottom 290px (y=734-1024).
+	# Game world: approx x=-50..960, y=0..480.
+	# zoom=1.1 keeps all towers on screen with margin:
+	#   left edge  world x=-50  → screen x=57  (safe)
+	#   right edge world x=930  → screen x=1135 (safe)
+	# cam_y=372 centers the game vertically in the top 734px.
+	var cam := get_node_or_null("Camera2D") as Camera2D
+	if cam == null:
+		for child in get_children():
+			if child is Camera2D:
+				cam = child
+				break
+	if cam:
+		cam.zoom     = Vector2(1.1, 1.1)
+		cam.position = Vector2(480, 372)
+
+func _update_hud() -> void:
+	if _hud:
+		_hud.update_hud(p1_elixir, p2_elixir, p1_deck, p2_deck)
+
+# ── Win condition ─────────────────────────────────────────────────────────────
+func _on_tower_destroyed(tower: Node) -> void:
+	if _game_over:
 		return
-
-	game_timer += delta
-	var time_left := maxf(0.0, game_duration - game_timer)
-	timer_updated.emit(time_left)
-
-	# Trigger double-elixir at 1:00 remaining
-	if not double_elixir and time_left <= 60.0:
-		double_elixir = true
-		double_elixir_started.emit()
-
-	var rate := ELIXIR_RATE_DOUBLE if double_elixir else ELIXIR_RATE_NORMAL
-	p1_elixir = minf(10.0, p1_elixir + rate * delta)
-	p2_elixir = minf(10.0, p2_elixir + rate * delta)
-
-	hud.set_p1_elixir(p1_elixir)
-	hud.set_p2_elixir(p2_elixir)
-
-	if game_timer >= game_duration:
-		_end_game()
-
-# ---------------------------------------------------------------------------
-# Card deployment
-# ---------------------------------------------------------------------------
-func _on_p1_card_played(slot_index: int, world_pos: Vector2) -> void:
-	var card: CardData = p1_deck.hand[slot_index]
-	if p1_elixir < float(card.cost):
-		return
-	p1_elixir -= float(card.cost)
-	p1_deck.use_card(slot_index)
-	_spawn_troop(card, 0, world_pos)
-	_update_hud_hands()
-
-func _on_p2_card_played(slot_index: int, world_pos: Vector2) -> void:
-	var card: CardData = p2_deck.hand[slot_index]
-	if p2_elixir < float(card.cost):
-		return
-	p2_elixir -= float(card.cost)
-	p2_deck.use_card(slot_index)
-	_spawn_troop(card, 1, world_pos)
-	_update_hud_hands()
-
-func _spawn_troop(card: CardData, player_idx: int, pos: Vector2) -> void:
-	var enemy_king_pos: Vector2
-	if player_idx == 0:
-		enemy_king_pos = _p2_king.position if _p2_king else Vector2(910, 207)
+	if tower.get("is_king_tower"):
+		var loser: int = tower.get("owner_player")
+		_declare_winner(1 - loser)
 	else:
-		enemy_king_pos = _p1_king.position if _p1_king else Vector2(-20, 215)
+		_expand_zone(tower)
 
-	var troop: TroopUnit = _troop_scene.instantiate() as TroopUnit
-	troop.init(card, player_idx, enemy_king_pos)
-	troop.position = pos
-	add_child(troop)
+func _expand_zone(tower: Node) -> void:
+	# The player who destroyed this tower gets to deploy in the area it guarded.
+	var owner: int     = tower.get("owner_player")
+	var attacker_ctrl  := _p1_controller if owner == 1 else _p2_controller
+	var top_lane: bool = tower.position.y < 240
+	var y_min: float   = 0.0  if top_lane else 240.0
+	var y_max: float   = 240.0 if top_lane else 480.0
 
-func _update_hud_hands() -> void:
-	# Pass 4 hand cards + 1 next_card (5 total) to each player's HUD slot row.
-	var ids:   Array[String] = []
-	var names: Array[String] = []
-	var costs: Array[int]    = []
-
-	for c in p1_deck.hand:
-		ids.append(c.card_id);  names.append(c.display_name);  costs.append(c.cost)
-	if p1_deck.next_card:
-		ids.append(p1_deck.next_card.card_id)
-		names.append(p1_deck.next_card.display_name)
-		costs.append(p1_deck.next_card.cost)
-	hud.set_p1_hand(ids, names, costs)
-
-	ids.clear();  names.clear();  costs.clear()
-	for c in p2_deck.hand:
-		ids.append(c.card_id);  names.append(c.display_name);  costs.append(c.cost)
-	if p2_deck.next_card:
-		ids.append(p2_deck.next_card.card_id)
-		names.append(p2_deck.next_card.display_name)
-		costs.append(p2_deck.next_card.cost)
-	hud.set_p2_hand(ids, names, costs)
-
-# ---------------------------------------------------------------------------
-# Win / loss
-# ---------------------------------------------------------------------------
-func _on_tower_destroyed(_tower: Tower, player_idx: int, is_king: bool) -> void:
-	if is_king:
-		_declare_winner(1 - player_idx)
+	if owner == 1:
+		# P2's tower died → P1 gets zone on P2's side
+		attacker_ctrl.add_zone(Rect2(490, y_min, 250, y_max - y_min))
 	else:
-		if player_idx == 0:
-			p2_crowns += 1
-		else:
-			p1_crowns += 1
-
-func _end_game() -> void:
-	game_over = true
-	if p1_crowns > p2_crowns:
-		_declare_winner(0)
-	elif p2_crowns > p1_crowns:
-		_declare_winner(1)
-	else:
-		_show_end_message("DRAW!")
+		# P1's tower died → P2 gets zone on P1's side
+		attacker_ctrl.add_zone(Rect2(160, y_min, 330, y_max - y_min))
 
 func _declare_winner(player_idx: int) -> void:
-	game_over = true
-	_show_end_message("PLAYER %d WINS!" % (player_idx + 1))
+	_game_over = true
+	_show_end_screen("PLAYER %d WINS!" % (player_idx + 1))
 
-func _show_end_message(msg: String) -> void:
+func _show_end_screen(msg: String) -> void:
 	var cl := CanvasLayer.new()
-	cl.layer = 20
+	cl.layer = 10
 	add_child(cl)
 
-	var panel := ColorRect.new()
-	panel.color = Color(0.0, 0.0, 0.0, 0.65)
-	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-	cl.add_child(panel)
+	var bg := ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.75)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	cl.add_child(bg)
 
-	var label := Label.new()
-	label.text = msg
-	label.add_theme_font_size_override("font_size", 80)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
-	label.set_anchors_preset(Control.PRESET_FULL_RECT)
-	cl.add_child(label)
+	var lbl := Label.new()
+	lbl.text = msg
+	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lbl.position = Vector2(0, -60)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 80)
+	cl.add_child(lbl)
+
+	var prompt := Label.new()
+	prompt.text = "PRESS ANY BUTTON TO CONTINUE"
+	prompt.set_anchors_preset(Control.PRESET_FULL_RECT)
+	prompt.position = Vector2(0, 80)
+	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	prompt.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	prompt.add_theme_font_size_override("font_size", 28)
+	cl.add_child(prompt)
+
+	var tween := create_tween()
+	tween.set_loops()
+	tween.tween_property(prompt, "modulate:a", 0.15, 0.6)
+	tween.tween_property(prompt, "modulate:a", 1.0,  0.6)
+
+	_awaiting_menu = true
+
+var _awaiting_menu: bool = false
+
+func _input(event: InputEvent) -> void:
+	if not _awaiting_menu:
+		return
+	var pressed := false
+	if event is InputEventKey:
+		pressed = (event as InputEventKey).pressed and not (event as InputEventKey).echo
+	elif event is InputEventJoypadButton:
+		pressed = (event as InputEventJoypadButton).pressed
+	if pressed:
+		get_tree().change_scene_to_file("res://main_menu.tscn")
+
+# ── Elixir tick ───────────────────────────────────────────────────────────────
+func _process(delta: float) -> void:
+	if _game_over:
+		return
+	p1_elixir = minf(ELIXIR_MAX, p1_elixir + ELIXIR_RATE * delta)
+	p2_elixir = minf(ELIXIR_MAX, p2_elixir + ELIXIR_RATE * delta)
+	_update_hud()
+
+# ── Card played ───────────────────────────────────────────────────────────────
+func _on_card_played(slot: int, world_pos: Vector2, player_idx: int) -> void:
+	if _game_over:
+		return
+	var deck   := p1_deck   if player_idx == 0 else p2_deck
+	var elixir := p1_elixir if player_idx == 0 else p2_elixir
+	var card   := deck.hand[slot]
+
+	if elixir < float(card.cost):
+		return
+
+	if player_idx == 0:
+		p1_elixir -= float(card.cost)
+	else:
+		p2_elixir -= float(card.cost)
+
+	deck.use_card(slot)
+	_spawn_troop(card, player_idx, world_pos)
+
+# ── Spawn ─────────────────────────────────────────────────────────────────────
+func _spawn_troop(card: CardData, player_idx: int, pos: Vector2) -> void:
+	var target := P1_KING_POS if player_idx == 0 else P2_KING_POS
+	var troop  := _troop_scene.instantiate() as Node2D
+	troop.position = pos
+	add_child(troop)
+	troop.call("init", card, player_idx, target)
