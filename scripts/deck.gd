@@ -1,25 +1,39 @@
 class_name Deck
 extends RefCounted
 
-var hand: Array[CardData]      = []   # 4 visible slots
-var next_card: CardData        = null
-var _cards: Array[CardData]    = []
-var _next_idx: int             = 0
+# 8-card circular queue. hand = queue[0..3], next_card = queue[4].
+# Playing a card removes it from its slot and appends it to the back —
+# that's the entire cycle mechanic. No index arithmetic needed.
+
+var hand: Array[CardData]   = []   # 4 visible/playable slots
+var next_card: CardData     = null # 5th card shown as "coming up"
+var _queue: Array[CardData] = []   # full 8-card queue
+
+const DECK_SIZE: int = 8
+const HAND_SIZE: int = 4
 
 func setup(card_list: Array[CardData]) -> void:
-	_cards = card_list.duplicate()
-	while _cards.size() < 5:
-		_cards.append_array(card_list)
-	hand.clear()
-	for i in range(4):
-		hand.append(_cards[i])
-	next_card = _cards[4]
-	_next_idx = 5
+	_queue.clear()
+	# Fill to DECK_SIZE by repeating card_list
+	var i: int = 0
+	while _queue.size() < DECK_SIZE:
+		_queue.append(card_list[i % card_list.size()])
+		i += 1
+	_queue.shuffle()
+	_sync_hand()
 
-## Play a card from slot_index. Returns the card that was played.
+# Play the card at slot_index (0-3).
+# Played card goes to the back; next_card slides into the vacated slot.
+# Returns the played CardData so the caller can spawn the troop.
 func use_card(slot_index: int) -> CardData:
-	var used: CardData   = hand[slot_index]
-	hand[slot_index]     = next_card
-	next_card            = _cards[_next_idx % _cards.size()]
-	_next_idx            = (_next_idx + 1) % _cards.size()
+	var used: CardData = _queue[slot_index]
+	_queue.remove_at(slot_index)
+	_queue.append(used)
+	_sync_hand()
 	return used
+
+func _sync_hand() -> void:
+	hand.clear()
+	for j in range(HAND_SIZE):
+		hand.append(_queue[j])
+	next_card = _queue[HAND_SIZE]

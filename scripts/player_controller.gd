@@ -72,6 +72,9 @@ func _build_cursor() -> void:
 	_cross_h.position = cursor_position
 	_cross_v.position = cursor_position
 
+	# Draw the main deploy zone outline
+	_make_zone_outline(Rect2(zone_min, zone_max - zone_min))
+
 func _process(delta: float) -> void:
 	_move_cursor(delta)
 
@@ -95,6 +98,18 @@ func _input(event: InputEvent) -> void:
 ## Unlock a new rectangle the cursor can enter (called when an enemy tower dies).
 func add_zone(rect: Rect2) -> void:
 	_extra_zones.append(rect)
+	_make_zone_outline(rect)
+
+func _make_zone_outline(rect: Rect2) -> void:
+	var ol := Line2D.new()
+	ol.width         = 1.5
+	ol.default_color = Color(cursor_color.r, cursor_color.g, cursor_color.b, 0.25)
+	ol.add_point(rect.position)
+	ol.add_point(Vector2(rect.end.x, rect.position.y))
+	ol.add_point(rect.end)
+	ol.add_point(Vector2(rect.position.x, rect.end.y))
+	ol.add_point(rect.position)
+	get_parent().add_child(ol)
 
 func _in_any_zone(pos: Vector2) -> bool:
 	if pos.x >= zone_min.x and pos.x <= zone_max.x \
