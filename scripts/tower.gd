@@ -146,3 +146,12 @@ func _die() -> void:
 	modulate = Color(0.3, 0.3, 0.3, 0.7)
 	remove_from_group("towers")
 	destroyed.emit()
+
+# Like _die() but does NOT emit destroyed — used when king death sweeps remaining towers.
+func destroy_silently() -> void:
+	if not is_alive:
+		return
+	is_alive = false
+	_target  = null
+	modulate = Color(0.3, 0.3, 0.3, 0.7)
+	remove_from_group("towers")

@@ -239,6 +239,13 @@ func _build_side(p: int) -> void:
 	# ── 4 hand cards ─────────────────────────────────────────────────────────
 	var keys_p1 := ["Z", "X", "C", "V"]
 	var keys_p2 := ["I", "J", "K", "L"]
+	# Controller button colors: blue, green, yellow, red (slots 0-3)
+	var btn_cols := [
+		Color(0.20, 0.50, 1.00),   # blue
+		Color(0.10, 0.85, 0.20),   # green
+		Color(1.00, 0.85, 0.10),   # yellow
+		Color(1.00, 0.20, 0.20),   # red
+	]
 	var card_names: Array = []
 	var card_costs: Array = []
 	var card_bgs:   Array = []
@@ -255,18 +262,26 @@ func _build_side(p: int) -> void:
 		add_child(cbg)
 		card_bgs.append(cbg)
 
+		# Button color strip across the top of the card
 		var ctop := ColorRect.new()
-		ctop.color    = Color(tc.r, tc.g, tc.b, 0.4)
+		ctop.color    = Color(btn_cols[i].r, btn_cols[i].g, btn_cols[i].b, 0.85)
 		ctop.position = Vector2(cx, cy)
-		ctop.size     = Vector2(CARD_W, 3.0)
+		ctop.size     = Vector2(CARD_W, 6.0)
 		add_child(ctop)
+
+		# Colored button dot + key label
+		var dot := ColorRect.new()
+		dot.color    = btn_cols[i]
+		dot.position = Vector2(cx + 5.0, cy + 10.0)
+		dot.size     = Vector2(10.0, 10.0)
+		add_child(dot)
 
 		var kl := Label.new()
 		kl.text = keys_p1[i] if is_p1 else keys_p2[i]
-		kl.position = Vector2(cx + 4.0, cy + 4.0)
-		kl.size     = Vector2(CARD_W - 8.0, 18.0)
+		kl.position = Vector2(cx + 18.0, cy + 6.0)
+		kl.size     = Vector2(CARD_W - 22.0, 18.0)
 		kl.add_theme_font_size_override("font_size", 13)
-		kl.add_theme_color_override("font_color", Color(0.50, 0.50, 0.50))
+		kl.add_theme_color_override("font_color", btn_cols[i])
 		add_child(kl)
 
 		var name_lbl := Label.new()

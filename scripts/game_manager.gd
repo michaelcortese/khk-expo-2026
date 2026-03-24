@@ -1,8 +1,8 @@
 class_name GameManager
 extends Node2D
 
-const P1_KING_POS := Vector2(900, 240)
-const P2_KING_POS := Vector2(60,  240)
+const P1_KING_POS := Vector2(900, 240)   # P1 troops march toward P2's king
+const P2_KING_POS := Vector2(20,  240)   # P2 troops march toward P1's king
 
 enum Phase { REGULAR, OVERTIME, SUDDEN_DEATH }
 
@@ -271,7 +271,8 @@ func _on_tower_destroyed(tower: Node) -> void:
 	# Screen shake — bigger for king tower
 	_shake_camera(8.0 if is_king else 4.0, 0.35)
 
-	# Crown pop effect
+	# Particle burst + crown pop
+	_spawn_tower_burst(tower.position, is_king)
 	_spawn_crown_pop(tower.position)
 
 	# Always count the crown (including king tower kill)
@@ -281,6 +282,15 @@ func _on_tower_destroyed(tower: Node) -> void:
 		_p2_crowns += 1
 
 	if is_king:
+		# Award crowns for any princess towers still standing on the losing side
+		for node in get_tree().get_nodes_in_group("towers"):
+			if node.get("owner_player") == loser and node.get("is_alive"):
+				if attacker == 0:
+					_p1_crowns += 1
+				else:
+					_p2_crowns += 1
+				node.call("destroy_silently")
+				_spawn_tower_burst(node.position, false)
 		_declare_winner(attacker)
 		return
 
@@ -308,8 +318,8 @@ func _expand_zone(tower: Node) -> void:
 	var y_max: float   = 240.0 if top_lane else 480.0
 
 	if owner == 1:
-		# P2's princess died → P1 gets the quarter near P2's princess (x 490 → 700)
-		attacker_ctrl.add_zone(Rect2(490, y_min, 210, y_max - y_min))
+		# P2's princess died → P1 gets the quarter near P2's princess (x 490 → 730)
+		attacker_ctrl.add_zone(Rect2(490, y_min, 240, y_max - y_min))
 	else:
 		# P1's princess died → P2 gets the quarter near P1's princess (x 260 → 510)
 		attacker_ctrl.add_zone(Rect2(260, y_min, 250, y_max - y_min))
@@ -330,6 +340,12 @@ func _enter_overtime() -> void:
 func _enter_sudden_death() -> void:
 	_phase = Phase.SUDDEN_DEATH
 	_show_phase_banner("SUDDEN DEATH")
+
+func _spawn_tower_burst(world_pos: Vector2, is_king: bool) -> void:
+	var burst := Node2D.new()
+	burst.set_script(load("res://scripts/tower_burst.gd"))
+	add_child(burst)
+	burst.call("start", world_pos, is_king)
 
 func _spawn_crown_pop(world_pos: Vector2) -> void:
 	var pop := Node2D.new()
