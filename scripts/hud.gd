@@ -239,12 +239,18 @@ func _build_side(p: int) -> void:
 	# ── 4 hand cards ─────────────────────────────────────────────────────────
 	var keys_p1 := ["Z", "X", "C", "V"]
 	var keys_p2 := ["I", "J", "K", "L"]
-	# Controller button colors: blue, green, yellow, red (slots 0-3)
+	# P1 (blue side): blue, green, yellow, red
+	# P2 (red side):  red, yellow, green, blue
 	var btn_cols := [
 		Color(0.20, 0.50, 1.00),   # blue
 		Color(0.10, 0.85, 0.20),   # green
 		Color(1.00, 0.85, 0.10),   # yellow
 		Color(1.00, 0.20, 0.20),   # red
+	] if is_p1 else [
+		Color(1.00, 0.20, 0.20),   # red
+		Color(1.00, 0.85, 0.10),   # yellow
+		Color(0.10, 0.85, 0.20),   # green
+		Color(0.20, 0.50, 1.00),   # blue
 	]
 	var card_names: Array = []
 	var card_costs: Array = []
