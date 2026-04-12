@@ -139,6 +139,7 @@ func _move_cursor(delta: float) -> void:
 
 	if abs(ax) < 0.18: ax = 0.0
 	if abs(ay) < 0.18: ay = 0.0
+	ax = -ax   # invert joystick X so left = left
 	ay = -ay   # invert joystick Y so up = up
 
 	if Input.is_key_pressed(_kb_left):  ax -= 1.0
