@@ -36,10 +36,12 @@ func _register_joy_actions() -> void:
 		if not InputMap.has_action(action):
 			InputMap.add_action(action, 0.0)
 		InputMap.action_erase_events(action)
-		var ev := InputEventJoypadButton.new()
-		ev.device       = joy_device
-		ev.button_index = i   # 0=South 1=East 2=West 3=North
-		InputMap.action_add_event(action, ev)
+		# Top row: buttons 0-3, bottom row: buttons 4-7 — same column = same card
+		for row in range(2):
+			var ev := InputEventJoypadButton.new()
+			ev.device       = joy_device
+			ev.button_index = i + row * 4
+			InputMap.action_add_event(action, ev)
 
 func _setup_keyboard() -> void:
 	if player_index == 0:
