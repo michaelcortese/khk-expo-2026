@@ -458,6 +458,15 @@ func _show_end_screen(msg: String, p1c: int = 0, p2c: int = 0) -> void:
 var _awaiting_menu: bool = false
 
 func _input(event: InputEvent) -> void:
+	# DEBUG — remove once button mapping is confirmed
+	if event is InputEventJoypadButton and (event as InputEventJoypadButton).pressed:
+		var e := event as InputEventJoypadButton
+		print("JOY device=%d  button=%d  name=%s" % [e.device, e.button_index, JoyButton.keys()[e.button_index]])
+	if event is InputEventJoypadMotion:
+		var e := event as InputEventJoypadMotion
+		if abs(e.axis_value) > 0.3:
+			print("JOY device=%d  axis=%d  value=%.2f" % [e.device, e.axis, e.axis_value])
+
 	if not _awaiting_menu:
 		return
 	var pressed := false
