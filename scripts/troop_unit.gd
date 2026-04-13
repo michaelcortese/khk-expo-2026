@@ -16,6 +16,8 @@ var is_ranged: bool               = false
 var is_splash: bool               = false
 var splash_radius: float          = 0.0
 
+var _audio: Node = null
+
 var _target: Node2D              = null
 var _enemy_king_pos: Vector2     = Vector2.ZERO
 var _spawn_lane: int             = 0   # 0 = top (y<240), 1 = bottom (y>=240)
@@ -230,8 +232,16 @@ func _handle_attack(delta: float) -> void:
 		if _target != null and is_instance_valid(_target):
 			if is_ranged:
 				_spawn_arrow()
+				_play_sfx("arrow", -8.0)
 			else:
 				_target.call("take_damage", attack_damage)
+				_play_sfx("hit", -6.0)
+
+func _play_sfx(name: String, vol: float = 0.0) -> void:
+	if _audio == null:
+		_audio = get_tree().get_first_node_in_group("audio_manager")
+	if _audio:
+		_audio.play(name, vol)
 
 func _spawn_arrow() -> void:
 	if _target == null or not is_instance_valid(_target):

@@ -3,6 +3,8 @@ extends StaticBody2D
 
 signal destroyed
 
+var _audio: Node = null
+
 var owner_player: int   = 0
 var is_king_tower: bool = false
 var max_hp: int         = 1400
@@ -24,6 +26,7 @@ func _ready() -> void:
 	_is_active = not is_king_tower   # princess towers are always active
 	add_to_group("towers")
 	queue_redraw()
+	_audio = get_tree().get_first_node_in_group("audio_manager")
 
 func activate() -> void:
 	_is_active = true
@@ -95,6 +98,10 @@ func take_damage(amount: int) -> void:
 	hp = max(0, hp - amount)
 	queue_redraw()
 	_spawn_damage_number(amount)
+	if _audio == null:
+		_audio = get_tree().get_first_node_in_group("audio_manager")
+	if _audio:
+		_audio.play("tower_hit", -6.0)
 	if hp == 0:
 		_die()
 

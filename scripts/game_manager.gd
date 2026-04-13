@@ -39,6 +39,15 @@ func _ready() -> void:
 	_setup_hud()
 	_fit_camera_above_hud()
 	_setup_river_walls()
+	_setup_audio()
+
+var _audio: Node = null
+
+func _setup_audio() -> void:
+	var script := load("res://scripts/audio_manager.gd")
+	_audio = script.new()
+	_audio.name = "AudioManager"
+	add_child(_audio)
 
 func _setup_field() -> void:
 	var field_script := load("res://scripts/field_bg.gd")
@@ -207,7 +216,7 @@ func _setup_controllers() -> void:
 	_p1_controller.player_index = 0
 	_p1_controller.joy_device   = 0
 	_p1_controller.zone_min     = Vector2(60,  0)
-	_p1_controller.zone_max     = Vector2(490, 480)
+	_p1_controller.zone_max     = Vector2(455, 480)
 	_p1_controller.cursor_color = Color(0.2, 0.6, 1.0, 0.9)
 	add_child(_p1_controller)
 	_p1_controller.card_played.connect(_on_card_played.bind(0))
@@ -216,7 +225,7 @@ func _setup_controllers() -> void:
 	_p2_controller.name         = "P2Controller"
 	_p2_controller.player_index = 1
 	_p2_controller.joy_device   = 1
-	_p2_controller.zone_min     = Vector2(510, 0)
+	_p2_controller.zone_min     = Vector2(505, 0)
 	_p2_controller.zone_max     = Vector2(900, 480)
 	_p2_controller.cursor_color = Color(1.0, 0.2, 0.2, 0.9)
 	add_child(_p2_controller)
@@ -271,6 +280,11 @@ func _on_tower_destroyed(tower: Node) -> void:
 	# Screen shake — bigger for king tower
 	_shake_camera(8.0 if is_king else 4.0, 0.35)
 
+	# Audio
+	if _audio:
+		_audio.play("tower_destroy", 2.0 if is_king else 0.0)
+		_audio.play("crown")
+
 	# Particle burst + crown pop
 	_spawn_tower_burst(tower.position, is_king)
 	_spawn_crown_pop(tower.position)
@@ -318,11 +332,11 @@ func _expand_zone(tower: Node) -> void:
 	var y_max: float   = 240.0 if top_lane else 480.0
 
 	if owner == 1:
-		# P2's princess died → P1 gets the quarter near P2's princess (x 490 → 730)
-		attacker_ctrl.add_zone(Rect2(490, y_min, 240, y_max - y_min))
+		# P2's princess died → P1 gets the quarter near P2's princess (x 455 → 730)
+		attacker_ctrl.add_zone(Rect2(455, y_min, 275, y_max - y_min))
 	else:
-		# P1's princess died → P2 gets the quarter near P1's princess (x 260 → 510)
-		attacker_ctrl.add_zone(Rect2(260, y_min, 250, y_max - y_min))
+		# P1's princess died → P2 gets the quarter near P1's princess (x 260 → 505)
+		attacker_ctrl.add_zone(Rect2(260, y_min, 245, y_max - y_min))
 
 func _end_regular_time() -> void:
 	if _p1_crowns > _p2_crowns:
@@ -391,6 +405,9 @@ func _show_phase_banner(text: String, col: Color = Color(1.0, 0.5, 0.0)) -> void
 
 func _declare_winner(player_idx: int) -> void:
 	_game_over = true
+	if _audio:
+		_audio.stop_music()
+		_audio.play("victory", -2.0)
 	_show_end_screen("PLAYER %d WINS!" % (player_idx + 1), _p1_crowns, _p2_crowns)
 
 func _show_end_screen(msg: String, p1c: int = 0, p2c: int = 0) -> void:
@@ -498,6 +515,8 @@ func _on_card_played(slot: int, world_pos: Vector2, player_idx: int) -> void:
 
 	if elixir < float(card.cost):
 		return
+	if _audio:
+		_audio.play("deploy")
 
 	if player_idx == 0:
 		p1_elixir -= float(card.cost)

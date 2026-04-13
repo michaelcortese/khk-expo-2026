@@ -23,12 +23,13 @@ func setup(card_list: Array[CardData]) -> void:
 	_sync_hand()
 
 # Play the card at slot_index (0-3).
-# Played card goes to the back; next_card slides into the vacated slot.
+# next_card drops into the played slot; other slots stay in place.
 # Returns the played CardData so the caller can spawn the troop.
 func use_card(slot_index: int) -> CardData:
 	var used: CardData = _queue[slot_index]
-	_queue.remove_at(slot_index)
-	_queue.append(used)
+	_queue[slot_index] = _queue[HAND_SIZE]  # next_card fills the played slot
+	_queue.remove_at(HAND_SIZE)             # close the gap at position 4
+	_queue.append(used)                     # played card goes to back of queue
 	_sync_hand()
 	return used
 
