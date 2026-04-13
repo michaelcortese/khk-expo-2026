@@ -31,17 +31,45 @@ func _ready() -> void:
 	_build_cursor()
 
 func _register_joy_actions() -> void:
+	# Primary face buttons identical for both controllers: physical 1-4 → 3,1,0,2
+	var primary_btns := [3, 1, 0, 2]
+
+	# Secondary (physical 5-8) differs per controller:
+	# P1 device 0: btn9, axis4, btn10, axis5
+	# P2 device 1: btn9, btn10, axis4, axis5
+	var secondary_btns: Array
+	var secondary_axes: Array
+	if joy_device == 0:
+		secondary_btns = [9,  -1,  10,  -1]
+		secondary_axes = [-1,  4,  -1,   5]
+	else:
+		secondary_btns = [9,  10,  -1,  -1]
+		secondary_axes = [-1, -1,   4,   5]
+
 	for i in range(4):
 		var action := "p%d_card%d" % [player_index + 1, i + 1]
 		if not InputMap.has_action(action):
 			InputMap.add_action(action, 0.0)
 		InputMap.action_erase_events(action)
-		# Top row: buttons 0-3, bottom row: buttons 4-7 — same column = same card
-		for row in range(2):
-			var ev := InputEventJoypadButton.new()
-			ev.device       = joy_device
-			ev.button_index = i + row * 4
-			InputMap.action_add_event(action, ev)
+
+		# Primary face button
+		var ev := InputEventJoypadButton.new()
+		ev.device       = joy_device
+		ev.button_index = primary_btns[i]
+		InputMap.action_add_event(action, ev)
+
+		# Secondary: digital button or analog trigger
+		if secondary_btns[i] >= 0:
+			var ev2 := InputEventJoypadButton.new()
+			ev2.device       = joy_device
+			ev2.button_index = secondary_btns[i]
+			InputMap.action_add_event(action, ev2)
+		else:
+			var ev2 := InputEventJoypadMotion.new()
+			ev2.device     = joy_device
+			ev2.axis       = secondary_axes[i]
+			ev2.axis_value = 0.5
+			InputMap.action_add_event(action, ev2)
 
 func _setup_keyboard() -> void:
 	if player_index == 0:
