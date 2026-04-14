@@ -82,13 +82,16 @@ func _setup_keyboard() -> void:
 		_kb_buttons = [KEY_I, KEY_J, KEY_K, KEY_L]
 
 func _build_cursor() -> void:
-	var arm := 14.0
+	var arm := 18.0
+	var gap := 5.0    # gap in the middle so the crosshair doesn't obscure the target
 	var w   := 2.5
 
 	_cross_h = Line2D.new()
 	_cross_h.width         = w
 	_cross_h.default_color = cursor_color
 	_cross_h.add_point(Vector2(-arm, 0.0))
+	_cross_h.add_point(Vector2(-gap, 0.0))
+	_cross_h.add_point(Vector2( gap, 0.0))
 	_cross_h.add_point(Vector2( arm, 0.0))
 	get_parent().add_child(_cross_h)
 
@@ -96,6 +99,8 @@ func _build_cursor() -> void:
 	_cross_v.width         = w
 	_cross_v.default_color = cursor_color
 	_cross_v.add_point(Vector2(0.0, -arm))
+	_cross_v.add_point(Vector2(0.0, -gap))
+	_cross_v.add_point(Vector2(0.0,  gap))
 	_cross_v.add_point(Vector2(0.0,  arm))
 	get_parent().add_child(_cross_v)
 

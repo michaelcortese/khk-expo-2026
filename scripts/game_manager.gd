@@ -1,8 +1,8 @@
 class_name GameManager
 extends Node2D
 
-const P1_KING_POS := Vector2(900, 240)   # P1 troops march toward P2's king
-const P2_KING_POS := Vector2(20,  240)   # P2 troops march toward P1's king
+const P1_KING_POS := Vector2(920, 240)   # P1 troops march toward P2's king
+const P2_KING_POS := Vector2(40,  240)   # P2 troops march toward P1's king
 
 enum Phase { REGULAR, OVERTIME, SUDDEN_DEATH }
 
@@ -15,6 +15,8 @@ const SUDDEN_DEATH_DRAIN: float = 20.0   # HP per second drained from all towers
 
 var p1_elixir: float = 5.0
 var p2_elixir: float = 5.0
+
+var _countdown_active: bool = true
 
 var _phase:                   Phase = Phase.REGULAR
 var _match_timer:             float = REGULAR_DURATION
@@ -40,8 +42,33 @@ func _ready() -> void:
 	_fit_camera_above_hud()
 	_setup_river_walls()
 	_setup_audio()
+	_start_countdown()
 
 var _audio: Node = null
+
+func _start_countdown() -> void:
+	var cl := CanvasLayer.new()
+	cl.layer = 9
+	add_child(cl)
+
+	var lbl := Label.new()
+	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 120)
+	cl.add_child(lbl)
+
+	var tw := create_tween()
+	for num in ["3", "2", "1", "GO!"]:
+		var col := Color(1.0, 0.85, 0.1) if num != "GO!" else Color(0.2, 1.0, 0.4)
+		tw.tween_callback(func():
+			lbl.text = num
+			lbl.add_theme_color_override("font_color", col)
+			lbl.modulate.a = 1.0)
+		tw.tween_property(lbl, "modulate:a", 0.0, 0.75)
+	tw.tween_callback(func():
+		_countdown_active = false
+		cl.queue_free())
 
 func _setup_audio() -> void:
 	var script := load("res://scripts/audio_manager.gd")
@@ -226,7 +253,7 @@ func _setup_controllers() -> void:
 	_p2_controller.player_index = 1
 	_p2_controller.joy_device   = 1
 	_p2_controller.zone_min     = Vector2(505, 0)
-	_p2_controller.zone_max     = Vector2(900, 480)
+	_p2_controller.zone_max     = Vector2(920, 480)
 	_p2_controller.cursor_color = Color(1.0, 0.2, 0.2, 0.9)
 	add_child(_p2_controller)
 	_p2_controller.card_played.connect(_on_card_played.bind(1))
@@ -332,11 +359,11 @@ func _expand_zone(tower: Node) -> void:
 	var y_max: float   = 240.0 if top_lane else 480.0
 
 	if owner == 1:
-		# P2's princess died → P1 gets the quarter near P2's princess (x 455 → 730)
-		attacker_ctrl.add_zone(Rect2(455, y_min, 275, y_max - y_min))
+		# P2's princess died (x=740) → P1 can deploy up to it
+		attacker_ctrl.add_zone(Rect2(455, y_min, 285, y_max - y_min))
 	else:
-		# P1's princess died → P2 gets the quarter near P1's princess (x 260 → 505)
-		attacker_ctrl.add_zone(Rect2(260, y_min, 245, y_max - y_min))
+		# P1's princess died (x=220) → P2 can deploy up to it
+		attacker_ctrl.add_zone(Rect2(220, y_min, 285, y_max - y_min))
 
 func _end_regular_time() -> void:
 	if _p1_crowns > _p2_crowns:
@@ -458,15 +485,6 @@ func _show_end_screen(msg: String, p1c: int = 0, p2c: int = 0) -> void:
 var _awaiting_menu: bool = false
 
 func _input(event: InputEvent) -> void:
-	# DEBUG — remove once button mapping is confirmed
-	if event is InputEventJoypadButton and (event as InputEventJoypadButton).pressed:
-		var e := event as InputEventJoypadButton
-		print("JOY device=%d  button=%d" % [e.device, e.button_index])
-	if event is InputEventJoypadMotion:
-		var e := event as InputEventJoypadMotion
-		if abs(e.axis_value) > 0.3:
-			print("JOY device=%d  axis=%d  value=%.2f" % [e.device, e.axis, e.axis_value])
-
 	if not _awaiting_menu:
 		return
 	var pressed := false
@@ -479,7 +497,7 @@ func _input(event: InputEvent) -> void:
 
 # ── Elixir tick + phase logic ─────────────────────────────────────────────────
 func _process(delta: float) -> void:
-	if _game_over:
+	if _game_over or _countdown_active:
 		return
 
 	match _phase:
@@ -516,7 +534,7 @@ func _process(delta: float) -> void:
 
 # ── Card played ───────────────────────────────────────────────────────────────
 func _on_card_played(slot: int, world_pos: Vector2, player_idx: int) -> void:
-	if _game_over:
+	if _game_over or _countdown_active:
 		return
 	var deck   := p1_deck   if player_idx == 0 else p2_deck
 	var elixir := p1_elixir if player_idx == 0 else p2_elixir

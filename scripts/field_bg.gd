@@ -21,6 +21,7 @@ func _draw() -> void:
 	_draw_river()
 	_draw_bridges()
 	_draw_river_banks()
+	_draw_vignette()
 
 func _draw_grass() -> void:
 	# Base green
@@ -114,6 +115,19 @@ func _draw_one_bridge(y0: float, y1: float) -> void:
 	# Side rails
 	draw_rect(Rect2(RIVER_X - 8, y0, 4, bh), Color(0.35, 0.22, 0.08))
 	draw_rect(Rect2(RIVER_X + RIVER_W + 4, y0, 4, bh), Color(0.35, 0.22, 0.08))
+
+func _draw_vignette() -> void:
+	# Soft dark border around the whole field
+	var edge := 80.0
+	var col  := Color(0.0, 0.0, 0.0, 0.55)
+	# Top
+	draw_rect(Rect2(FIELD_L, FIELD_T, FIELD_R - FIELD_L, edge), col)
+	# Bottom
+	draw_rect(Rect2(FIELD_L, FIELD_B - edge, FIELD_R - FIELD_L, edge), col)
+	# Left
+	draw_rect(Rect2(FIELD_L, FIELD_T, edge, FIELD_B - FIELD_T), col)
+	# Right
+	draw_rect(Rect2(FIELD_R - edge, FIELD_T, edge, FIELD_B - FIELD_T), col)
 
 func _draw_river_banks() -> void:
 	# Muddy bank edges on each side of the river
