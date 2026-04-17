@@ -20,6 +20,10 @@ var _cursor_cur_frame:   int      = 0
 var _cursor_frame_timer: float    = 0.0
 const CURSOR_FRAME_INTERVAL := 0.28
 
+# Per-slot debounce: prevents double-fire when a physical button is slow to rise
+const CARD_DEBOUNCE_SEC := 0.35
+var _card_cooldown: Array[float] = [0.0, 0.0, 0.0, 0.0]
+
 # Keyboard fallback
 var _kb_left:    Key
 var _kb_right:   Key
@@ -101,6 +105,9 @@ func _build_cursor() -> void:
 	_make_zone_outline(Rect2(zone_min, zone_max - zone_min))
 
 func _process(delta: float) -> void:
+	for i in range(4):
+		if _card_cooldown[i] > 0.0:
+			_card_cooldown[i] -= delta
 	_move_cursor(delta)
 	# Animate cursor frames
 	if _cursor_sprite != null and _cursor_frames.size() == 2:
@@ -115,6 +122,9 @@ func _input(event: InputEvent) -> void:
 	for i in range(4):
 		var action := "p%d_card%d" % [player_index + 1, i + 1]
 		if event.is_action_pressed(action):
+			if _card_cooldown[i] > 0.0:
+				return
+			_card_cooldown[i] = CARD_DEBOUNCE_SEC
 			card_played.emit(i, cursor_position)
 			return
 
@@ -124,6 +134,9 @@ func _input(event: InputEvent) -> void:
 		if ke.pressed and not ke.echo:
 			for i in range(_kb_buttons.size()):
 				if ke.keycode == _kb_buttons[i]:
+					if _card_cooldown[i] > 0.0:
+						return
+					_card_cooldown[i] = CARD_DEBOUNCE_SEC
 					card_played.emit(i, cursor_position)
 					return
 

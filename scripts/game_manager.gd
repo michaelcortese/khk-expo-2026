@@ -11,7 +11,7 @@ const ELIXIR_RATE_FAST:   float = 2.0 / 2.8
 const ELIXIR_MAX:         float = 10.0
 const REGULAR_DURATION:   float = 180.0
 const OVERTIME_DURATION:  float = 180.0
-const SUDDEN_DEATH_DRAIN: float = 20.0   # HP per second drained from all towers
+const SUDDEN_DEATH_DRAIN: float = 80.0   # HP per second drained from all towers
 
 var p1_elixir: float = 5.0
 var p2_elixir: float = 5.0
@@ -33,21 +33,12 @@ var _troop_scene: PackedScene
 var _hud: HUD
 var _hud_tick: int = 0
 
+var _pixel_font: FontFile = null
+
 func _ready() -> void:
 	_apply_pixel_font()
 	_troop_scene = load("res://troop.tscn")
 	_setup_field()
-
-func _apply_pixel_font() -> void:
-	var font := load("res://assets/fonts_assets/pokemon_fire_red.ttf") as FontFile
-	if font == null:
-		return
-	font.antialiasing          = TextServer.FONT_ANTIALIASING_NONE
-	font.hinting               = TextServer.HINTING_NONE
-	font.subpixel_positioning  = TextServer.SUBPIXEL_POSITIONING_DISABLED
-	font.generate_mipmaps      = false
-	ThemeDB.fallback_font      = font
-	ThemeDB.fallback_font_size = 16
 	_setup_decks()
 	_tag_towers()
 	_setup_controllers()
@@ -56,6 +47,31 @@ func _apply_pixel_font() -> void:
 	_setup_river_walls()
 	_setup_audio()
 	_start_countdown()
+	# Apply font to every Label built during setup
+	call_deferred("_font_walk", get_tree().root)
+
+func _apply_pixel_font() -> void:
+	var fa := FileAccess.open("res://assets/fonts_assets/pokemon_fire_red.ttf", FileAccess.READ)
+	if fa == null:
+		return
+	_pixel_font = FontFile.new()
+	_pixel_font.data                  = fa.get_buffer(fa.get_length())
+	_pixel_font.antialiasing          = TextServer.FONT_ANTIALIASING_NONE
+	_pixel_font.hinting               = TextServer.HINTING_NONE
+	_pixel_font.subpixel_positioning  = TextServer.SUBPIXEL_POSITIONING_DISABLED
+	_pixel_font.generate_mipmaps      = false
+	ThemeDB.fallback_font             = _pixel_font
+	ThemeDB.fallback_font_size        = 16
+
+func _font_walk(node: Node) -> void:
+	if _pixel_font == null:
+		return
+	if node is Label:
+		(node as Label).add_theme_font_override("font", _pixel_font)
+	elif node is RichTextLabel:
+		(node as RichTextLabel).add_theme_font_override("normal_font", _pixel_font)
+	for child in node.get_children():
+		_font_walk(child)
 
 var _audio: Node = null
 
@@ -69,6 +85,8 @@ func _start_countdown() -> void:
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 120)
+	if _pixel_font:
+		lbl.add_theme_font_override("font", _pixel_font)
 	cl.add_child(lbl)
 
 	# Tweak these two constants to line up with the SFX file:
@@ -454,6 +472,8 @@ func _show_phase_banner(text: String, col: Color = Color(1.0, 0.5, 0.0)) -> void
 	lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 72)
 	lbl.add_theme_color_override("font_color", col)
+	if _pixel_font:
+		lbl.add_theme_font_override("font", _pixel_font)
 	cl.add_child(lbl)
 
 	var tw := create_tween()
@@ -485,6 +505,8 @@ func _show_end_screen(msg: String, p1c: int = 0, p2c: int = 0) -> void:
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 80)
+	if _pixel_font:
+		lbl.add_theme_font_override("font", _pixel_font)
 	cl.add_child(lbl)
 
 	var score := Label.new()
@@ -495,6 +517,8 @@ func _show_end_screen(msg: String, p1c: int = 0, p2c: int = 0) -> void:
 	score.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	score.add_theme_font_size_override("font_size", 44)
 	score.add_theme_color_override("font_color", Color(1.0, 0.85, 0.0))
+	if _pixel_font:
+		score.add_theme_font_override("font", _pixel_font)
 	cl.add_child(score)
 
 	var prompt := Label.new()
@@ -504,6 +528,8 @@ func _show_end_screen(msg: String, p1c: int = 0, p2c: int = 0) -> void:
 	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	prompt.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
 	prompt.add_theme_font_size_override("font_size", 28)
+	if _pixel_font:
+		prompt.add_theme_font_override("font", _pixel_font)
 	cl.add_child(prompt)
 
 	var tween := create_tween()

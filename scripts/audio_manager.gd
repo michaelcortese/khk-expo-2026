@@ -41,13 +41,15 @@ func _on_audio_ready(sfx: Dictionary) -> void:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+const SFX_OFFSET_DB := -10.0   # global SFX trim — raise/lower to balance against music
+
 func play(name: String, vol_db: float = 0.0) -> void:
 	if not _sfx.has(name):
 		return
 	var p := _pool[_pool_i % _pool.size()]
 	_pool_i += 1
 	p.stream    = _sfx[name]
-	p.volume_db = vol_db
+	p.volume_db = vol_db + SFX_OFFSET_DB
 	p.play()
 
 func stop_music() -> void:
@@ -61,7 +63,7 @@ func stop_music() -> void:
 func _setup_music_player() -> void:
 	_music           = AudioStreamPlayer.new()
 	_music.bus       = "Master"
-	_music.volume_db = -14.0
+	_music.volume_db = -4.0
 	add_child(_music)
 	var stream := load("res://assets/sounds/battle_theme.mp3") as AudioStreamMP3
 	if stream:

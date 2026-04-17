@@ -43,6 +43,22 @@ var _goblin_frame: int                = 1
 var _goblin_frame_timer: float        = 0.0
 const GOBLIN_FRAME_INTERVAL: float    = 0.14
 
+# Hog Rider sprite sheet variables
+var _hogrider_sprite: Sprite2D        = null
+var _hogrider_textures: Dictionary    = {}
+var _hogrider_dir: String             = "right"
+var _hogrider_frame: int              = 1
+var _hogrider_frame_timer: float      = 0.0
+const HOGRIDER_FRAME_INTERVAL: float  = 0.14
+
+# Wizard sprite sheet variables
+var _wizard_sprite: Sprite2D          = null
+var _wizard_textures: Dictionary      = {}
+var _wizard_dir: String               = "right"
+var _wizard_frame: int                = 1
+var _wizard_frame_timer: float        = 0.0
+const WIZARD_FRAME_INTERVAL: float    = 0.18
+
 # ── Palette ───────────────────────────────────────────────────────────────────
 const SKIN    := Color(0.97, 0.82, 0.65)
 const SKIN_D  := Color(0.80, 0.62, 0.45)
@@ -72,6 +88,10 @@ func setup(card_id: String, player_idx: int) -> void:
 		_setup_mpekka_sprites()
 	elif _card_id == "goblin_gang" or _card_id == "spear_goblin":
 		_setup_goblin_sprites()
+	elif _card_id == "hog_rider":
+		_setup_hogrider_sprites()
+	elif _card_id == "wizard":
+		_setup_wizard_sprites()
 
 func set_direction(dir: String) -> void:
 	match _card_id:
@@ -95,6 +115,16 @@ func set_direction(dir: String) -> void:
 				return
 			_goblin_dir = dir
 			_update_goblin_texture()
+		"hog_rider":
+			if _hogrider_dir == dir:
+				return
+			_hogrider_dir = dir
+			_update_hogrider_texture()
+		"wizard":
+			if _wizard_dir == dir:
+				return
+			_wizard_dir = dir
+			_update_wizard_texture()
 
 func set_anim_state(state: String) -> void:
 	if _anim_state == state:
@@ -119,6 +149,14 @@ func set_anim_state(state: String) -> void:
 				_goblin_frame       = 1
 				_goblin_frame_timer = 0.0
 				_update_goblin_texture()
+			"hog_rider":
+				_hogrider_frame       = 1
+				_hogrider_frame_timer = 0.0
+				_update_hogrider_texture()
+			"wizard":
+				_wizard_frame       = 1
+				_wizard_frame_timer = 0.0
+				_update_wizard_texture()
 			_:
 				queue_redraw()   # one final draw to show rest pose
 
@@ -187,6 +225,42 @@ func _update_goblin_texture() -> void:
 	if _goblin_textures.has(key):
 		_goblin_sprite.texture = _goblin_textures[key]
 
+func _setup_hogrider_sprites() -> void:
+	for dir in ["up", "down", "left", "right"]:
+		for frame in [1, 2]:
+			var key: String = dir + "_" + str(frame)
+			_hogrider_textures[key] = load("res://assets/hogrider_assets/hogrider_" + dir + "_frame" + str(frame) + ".png")
+	_hogrider_sprite                = Sprite2D.new()
+	_hogrider_sprite.texture        = _hogrider_textures["right_1"]
+	_hogrider_sprite.scale          = Vector2(2.0, 2.0)
+	_hogrider_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	add_child(_hogrider_sprite)
+
+func _update_hogrider_texture() -> void:
+	if _hogrider_sprite == null:
+		return
+	var key: String = _hogrider_dir + "_" + str(_hogrider_frame)
+	if _hogrider_textures.has(key):
+		_hogrider_sprite.texture = _hogrider_textures[key]
+
+func _setup_wizard_sprites() -> void:
+	for dir in ["up", "down", "left", "right"]:
+		for frame in [1, 2]:
+			var key: String = dir + "_" + str(frame)
+			_wizard_textures[key] = load("res://assets/wizard_assets/wizard_" + dir + "_frame" + str(frame) + ".png")
+	_wizard_sprite                = Sprite2D.new()
+	_wizard_sprite.texture        = _wizard_textures["right_1"]
+	_wizard_sprite.scale          = Vector2(2.0, 2.0)
+	_wizard_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	add_child(_wizard_sprite)
+
+func _update_wizard_texture() -> void:
+	if _wizard_sprite == null:
+		return
+	var key: String = _wizard_dir + "_" + str(_wizard_frame)
+	if _wizard_textures.has(key):
+		_wizard_sprite.texture = _wizard_textures[key]
+
 func _update_knight_texture() -> void:
 	if _knight_sprite == null:
 		return
@@ -231,6 +305,22 @@ func _process(delta: float) -> void:
 					_goblin_frame = 2 if _goblin_frame == 1 else 1
 					_update_goblin_texture()
 			return
+		"hog_rider":
+			if _anim_state == "walk":
+				_hogrider_frame_timer += delta
+				if _hogrider_frame_timer >= HOGRIDER_FRAME_INTERVAL:
+					_hogrider_frame_timer -= HOGRIDER_FRAME_INTERVAL
+					_hogrider_frame = 2 if _hogrider_frame == 1 else 1
+					_update_hogrider_texture()
+			return
+		"wizard":
+			if _anim_state == "walk":
+				_wizard_frame_timer += delta
+				if _wizard_frame_timer >= WIZARD_FRAME_INTERVAL:
+					_wizard_frame_timer -= WIZARD_FRAME_INTERVAL
+					_wizard_frame = 2 if _wizard_frame == 1 else 1
+					_update_wizard_texture()
+			return
 	queue_redraw()
 
 # ── Draw helpers ──────────────────────────────────────────────────────────────
@@ -272,7 +362,7 @@ func _lean(ap: float) -> float:
 # ── Dispatch ──────────────────────────────────────────────────────────────────
 
 func _draw() -> void:
-	if _card_id in ["knight", "archer", "mini_pekka", "goblin_gang", "spear_goblin"]:
+	if _card_id in ["knight", "archer", "mini_pekka", "goblin_gang", "spear_goblin", "hog_rider", "wizard"]:
 		return   # rendered by Sprite2D child node
 	var wp := 0.0   # walk phase 0..TAU
 	var ap := 0.0   # attack phase 0..1

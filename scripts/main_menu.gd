@@ -4,20 +4,35 @@ const P1_COL := Color(0.15, 0.65, 1.0)
 const P2_COL := Color(1.0,  0.18, 0.18)
 const GOLD   := Color(1.0,  0.85, 0.10)
 
+var _pixel_font: FontFile = null
+
 func _ready() -> void:
 	_apply_pixel_font()
 	_build_ui()
+	call_deferred("_font_walk", get_tree().root)
 
 func _apply_pixel_font() -> void:
-	var font := load("res://assets/fonts_assets/pokemon_fire_red.ttf") as FontFile
-	if font == null:
+	var fa := FileAccess.open("res://assets/fonts_assets/pokemon_fire_red.ttf", FileAccess.READ)
+	if fa == null:
 		return
-	font.antialiasing          = TextServer.FONT_ANTIALIASING_NONE
-	font.hinting               = TextServer.HINTING_NONE
-	font.subpixel_positioning  = TextServer.SUBPIXEL_POSITIONING_DISABLED
-	font.generate_mipmaps      = false
-	ThemeDB.fallback_font      = font
-	ThemeDB.fallback_font_size = 16
+	_pixel_font = FontFile.new()
+	_pixel_font.data                  = fa.get_buffer(fa.get_length())
+	_pixel_font.antialiasing          = TextServer.FONT_ANTIALIASING_NONE
+	_pixel_font.hinting               = TextServer.HINTING_NONE
+	_pixel_font.subpixel_positioning  = TextServer.SUBPIXEL_POSITIONING_DISABLED
+	_pixel_font.generate_mipmaps      = false
+	ThemeDB.fallback_font             = _pixel_font
+	ThemeDB.fallback_font_size        = 16
+
+func _font_walk(node: Node) -> void:
+	if _pixel_font == null:
+		return
+	if node is Label:
+		(node as Label).add_theme_font_override("font", _pixel_font)
+	elif node is RichTextLabel:
+		(node as RichTextLabel).add_theme_font_override("normal_font", _pixel_font)
+	for child in node.get_children():
+		_font_walk(child)
 
 func _build_ui() -> void:
 	var cl := CanvasLayer.new()

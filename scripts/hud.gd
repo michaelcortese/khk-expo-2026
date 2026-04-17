@@ -68,9 +68,12 @@ var _timer_lbl:          Label
 var _timer_bg:           ColorRect
 var _p1_crown_lbl:       Label
 var _p2_crown_lbl:       Label
-var _double_elixir_bg:   ColorRect
-var _double_elixir_lbl:  Label
+var _double_elixir_bg:   ColorRect  # kept for null-safety; no longer created
+var _double_elixir_lbl:  Label      # kept for null-safety; no longer created
 var _de_tween:           Tween
+var _center_elix_icon:   TextureRect
+var _elix1_tex:          Texture2D
+var _elix2_tex:          Texture2D
 
 # ── Animation state ───────────────────────────────────────────────────────────
 var _p1_last_ids:  Array[String] = ["","","",""]
@@ -173,32 +176,21 @@ func _build_center_gem() -> void:
 		line.size     = Vector2(1.0, PANEL_H)
 		add_child(line)
 
-	var gem := Label.new()
-	gem.text     = "✦"
-	gem.position = Vector2(SIDE_W + CENTER_W * 0.5 - 18.0, PANEL_Y + PANEL_H * 0.5 - 26.0)
-	gem.size     = Vector2(36.0, 48.0)
-	gem.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	gem.add_theme_font_size_override("font_size", 34)
-	gem.add_theme_color_override("font_color", ELIX_COL)
-	add_child(gem)
+	# Load both elixir icon textures
+	_elix1_tex = load("res://assets/elixer_bar_assets/elixer_1.png") as Texture2D
+	_elix2_tex = load("res://assets/elixer_bar_assets/elixer_2.png") as Texture2D
 
-	_double_elixir_bg = ColorRect.new()
-	_double_elixir_bg.color    = Color(0.20, 0.04, 0.36)
-	_double_elixir_bg.position = Vector2(SIDE_W - 2.0, PANEL_Y + PANEL_H * 0.5 + 32.0)
-	_double_elixir_bg.size     = Vector2(CENTER_W + 4.0, 40.0)
-	_double_elixir_bg.visible  = false
-	add_child(_double_elixir_bg)
-
-	_double_elixir_lbl = Label.new()
-	_double_elixir_lbl.text     = "2×"
-	_double_elixir_lbl.position = _double_elixir_bg.position
-	_double_elixir_lbl.size     = _double_elixir_bg.size
-	_double_elixir_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_double_elixir_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
-	_double_elixir_lbl.add_theme_font_size_override("font_size", 26)
-	_double_elixir_lbl.add_theme_color_override("font_color", Color(0.90, 0.25, 1.0))
-	_double_elixir_lbl.visible = false
-	add_child(_double_elixir_lbl)
+	# Center the icon in the panel
+	var icon_size := 48.0
+	_center_elix_icon                    = TextureRect.new()
+	_center_elix_icon.texture            = _elix1_tex
+	_center_elix_icon.texture_filter     = CanvasItem.TEXTURE_FILTER_NEAREST
+	_center_elix_icon.expand_mode        = TextureRect.EXPAND_IGNORE_SIZE
+	_center_elix_icon.stretch_mode       = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_center_elix_icon.position           = Vector2(SIDE_W + CENTER_W * 0.5 - icon_size * 0.5,
+												   PANEL_Y + PANEL_H * 0.5 - icon_size * 0.5)
+	_center_elix_icon.size               = Vector2(icon_size, icon_size)
+	add_child(_center_elix_icon)
 
 # ── Card icon loader ──────────────────────────────────────────────────────────
 func _load_card_icon(card_id: String) -> Texture2D:
@@ -206,6 +198,11 @@ func _load_card_icon(card_id: String) -> Texture2D:
 	var subfolder := "res://assets/" + card_id + "_assets/" + card_id + "_card.png"
 	if ResourceLoader.exists(subfolder):
 		return load(subfolder) as Texture2D
+	# Some card IDs use underscores but their asset folders drop them (e.g. hog_rider → hogrider)
+	var compact_id := card_id.replace("_", "")
+	var compact := "res://assets/" + compact_id + "_assets/" + compact_id + "_card.png"
+	if ResourceLoader.exists(compact):
+		return load(compact) as Texture2D
 	# Fallback: root assets folder
 	var root := "res://assets/" + card_id + "_card.png"
 	if ResourceLoader.exists(root):
@@ -761,14 +758,14 @@ func set_timer(remaining: float, phase: int) -> void:
 
 # ── 2× Elixir ─────────────────────────────────────────────────────────────────
 func set_double_elixir(active: bool) -> void:
-	if _double_elixir_lbl == null:
+	if _center_elix_icon == null:
 		return
-	_double_elixir_lbl.visible = active
-	_double_elixir_bg.visible  = active
+	_center_elix_icon.texture = _elix2_tex if active else _elix1_tex
 	if active and (_de_tween == null or not _de_tween.is_running()):
 		_de_tween = create_tween().set_loops()
-		_de_tween.tween_property(_double_elixir_lbl, "modulate:a", 0.30, 0.45)
-		_de_tween.tween_property(_double_elixir_lbl, "modulate:a", 1.0,  0.45)
+		_de_tween.tween_property(_center_elix_icon, "modulate:a", 0.55, 0.45)
+		_de_tween.tween_property(_center_elix_icon, "modulate:a", 1.0,  0.45)
 	elif not active and _de_tween != null:
 		_de_tween.kill()
+		_center_elix_icon.modulate.a = 1.0
 		_de_tween = null

@@ -45,6 +45,8 @@ func setup_sprite(player_idx: int, tower_num: int) -> void:
 
 	# King tower (tower_num == 0) — single static image, no animation
 	if tower_num == 0:
+		max_hp = 2800
+		hp     = max_hp
 		var path := "res://assets/towers_assets/%s_king_tower.png" % color
 		if not ResourceLoader.exists(path):
 			return
