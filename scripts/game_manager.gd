@@ -292,16 +292,16 @@ func _update_hud() -> void:
 		return
 	_hud.update_hud(p1_elixir, p2_elixir, p1_deck, p2_deck)
 	var remaining: float
-		match _phase:
-			Phase.REGULAR:
-				remaining = maxf(0.0, _match_timer)
-			Phase.OVERTIME:
-				remaining = maxf(0.0, _overtime_timer)
-			Phase.SUDDEN_DEATH:
-				remaining = 0.0
-		_hud.set_timer(remaining, _phase)
-		var double_elixir := _phase != Phase.REGULAR or _match_timer < 60.0
-		_hud.set_double_elixir(double_elixir)
+	match _phase:
+		Phase.REGULAR:
+			remaining = maxf(0.0, _match_timer)
+		Phase.OVERTIME:
+			remaining = maxf(0.0, _overtime_timer)
+		Phase.SUDDEN_DEATH:
+			remaining = 0.0
+	_hud.set_timer(remaining, _phase)
+	var double_elixir := _phase != Phase.REGULAR or _match_timer < 60.0
+	_hud.set_double_elixir(double_elixir)
 
 # ── Win condition ─────────────────────────────────────────────────────────────
 func _on_tower_destroyed(tower: Node) -> void:
