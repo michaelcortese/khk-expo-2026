@@ -40,8 +40,6 @@ func _draw() -> void:
 		# Fallback solid color if textures failed to load
 		draw_rect(field_rect, Color(0.18, 0.45, 0.15))
 
-	_draw_bridges()
-	_draw_vignette()
 
 func _draw_bridges() -> void:
 	_draw_one_bridge(BRIDGE_TOP_Y0, BRIDGE_TOP_Y1)

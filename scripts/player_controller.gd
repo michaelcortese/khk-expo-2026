@@ -101,8 +101,14 @@ func _build_cursor() -> void:
 	_cursor_sprite.position       = cursor_position
 	get_parent().add_child(_cursor_sprite)
 
-	# Deploy zone outline
-	_make_zone_outline(Rect2(zone_min, zone_max - zone_min))
+	# Deploy zone outline — extend to the outer screen edge for each side
+	var outline_min := zone_min
+	var outline_max := zone_max
+	if player_index == 0:
+		outline_min.x = -200.0   # extend to left screen edge
+	else:
+		outline_max.x = 1200.0   # extend to right screen edge
+	_make_zone_outline(Rect2(outline_min, outline_max - outline_min))
 
 func _process(delta: float) -> void:
 	for i in range(4):
@@ -147,8 +153,8 @@ func add_zone(rect: Rect2) -> void:
 
 func _make_zone_outline(rect: Rect2) -> void:
 	var ol := Line2D.new()
-	ol.width         = 1.5
-	ol.default_color = Color(cursor_color.r, cursor_color.g, cursor_color.b, 0.25)
+	ol.width         = 4.0
+	ol.default_color = Color(cursor_color.r, cursor_color.g, cursor_color.b, 0.80)
 	ol.add_point(rect.position)
 	ol.add_point(Vector2(rect.end.x, rect.position.y))
 	ol.add_point(rect.end)

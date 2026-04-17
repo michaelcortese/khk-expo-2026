@@ -43,6 +43,22 @@ var _goblin_frame: int                = 1
 var _goblin_frame_timer: float        = 0.0
 const GOBLIN_FRAME_INTERVAL: float    = 0.14
 
+# Barbarian sprite sheet variables
+var _barbarian_sprite: Sprite2D       = null
+var _barbarian_textures: Dictionary   = {}
+var _barbarian_dir: String            = "right"
+var _barbarian_frame: int             = 1
+var _barbarian_frame_timer: float     = 0.0
+const BARBARIAN_FRAME_INTERVAL: float = 0.13
+
+# Giant sprite sheet variables
+var _giant_sprite: Sprite2D           = null
+var _giant_textures: Dictionary       = {}
+var _giant_dir: String                = "right"
+var _giant_frame: int                 = 1
+var _giant_frame_timer: float         = 0.0
+const GIANT_FRAME_INTERVAL: float     = 0.22
+
 # Hog Rider sprite sheet variables
 var _hogrider_sprite: Sprite2D        = null
 var _hogrider_textures: Dictionary    = {}
@@ -92,6 +108,10 @@ func setup(card_id: String, player_idx: int) -> void:
 		_setup_hogrider_sprites()
 	elif _card_id == "wizard":
 		_setup_wizard_sprites()
+	elif _card_id == "barbarian":
+		_setup_barbarian_sprites()
+	elif _card_id == "giant":
+		_setup_giant_sprites()
 
 func set_direction(dir: String) -> void:
 	match _card_id:
@@ -125,6 +145,16 @@ func set_direction(dir: String) -> void:
 				return
 			_wizard_dir = dir
 			_update_wizard_texture()
+		"barbarian":
+			if _barbarian_dir == dir:
+				return
+			_barbarian_dir = dir
+			_update_barbarian_texture()
+		"giant":
+			if _giant_dir == dir:
+				return
+			_giant_dir = dir
+			_update_giant_texture()
 
 func set_anim_state(state: String) -> void:
 	if _anim_state == state:
@@ -157,6 +187,14 @@ func set_anim_state(state: String) -> void:
 				_wizard_frame       = 1
 				_wizard_frame_timer = 0.0
 				_update_wizard_texture()
+			"barbarian":
+				_barbarian_frame       = 1
+				_barbarian_frame_timer = 0.0
+				_update_barbarian_texture()
+			"giant":
+				_giant_frame       = 1
+				_giant_frame_timer = 0.0
+				_update_giant_texture()
 			_:
 				queue_redraw()   # one final draw to show rest pose
 
@@ -224,6 +262,42 @@ func _update_goblin_texture() -> void:
 	var key: String = _goblin_dir + "_" + str(_goblin_frame)
 	if _goblin_textures.has(key):
 		_goblin_sprite.texture = _goblin_textures[key]
+
+func _setup_barbarian_sprites() -> void:
+	for dir in ["up", "down", "left", "right"]:
+		for frame in [1, 2]:
+			var key: String = dir + "_" + str(frame)
+			_barbarian_textures[key] = load("res://assets/barbarian_assets/barbarian_" + dir + "_frame" + str(frame) + ".png")
+	_barbarian_sprite                = Sprite2D.new()
+	_barbarian_sprite.texture        = _barbarian_textures["right_1"]
+	_barbarian_sprite.scale          = Vector2(2.0, 2.0)
+	_barbarian_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	add_child(_barbarian_sprite)
+
+func _update_barbarian_texture() -> void:
+	if _barbarian_sprite == null:
+		return
+	var key: String = _barbarian_dir + "_" + str(_barbarian_frame)
+	if _barbarian_textures.has(key):
+		_barbarian_sprite.texture = _barbarian_textures[key]
+
+func _setup_giant_sprites() -> void:
+	for dir in ["up", "down", "left", "right"]:
+		for frame in [1, 2]:
+			var key: String = dir + "_" + str(frame)
+			_giant_textures[key] = load("res://assets/gaint_assets/gaint_" + dir + "_frame" + str(frame) + ".png")
+	_giant_sprite                = Sprite2D.new()
+	_giant_sprite.texture        = _giant_textures["right_1"]
+	_giant_sprite.scale          = Vector2(2.0, 2.0)
+	_giant_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	add_child(_giant_sprite)
+
+func _update_giant_texture() -> void:
+	if _giant_sprite == null:
+		return
+	var key: String = _giant_dir + "_" + str(_giant_frame)
+	if _giant_textures.has(key):
+		_giant_sprite.texture = _giant_textures[key]
 
 func _setup_hogrider_sprites() -> void:
 	for dir in ["up", "down", "left", "right"]:
@@ -305,6 +379,22 @@ func _process(delta: float) -> void:
 					_goblin_frame = 2 if _goblin_frame == 1 else 1
 					_update_goblin_texture()
 			return
+		"barbarian":
+			if _anim_state == "walk":
+				_barbarian_frame_timer += delta
+				if _barbarian_frame_timer >= BARBARIAN_FRAME_INTERVAL:
+					_barbarian_frame_timer -= BARBARIAN_FRAME_INTERVAL
+					_barbarian_frame = 2 if _barbarian_frame == 1 else 1
+					_update_barbarian_texture()
+			return
+		"giant":
+			if _anim_state == "walk":
+				_giant_frame_timer += delta
+				if _giant_frame_timer >= GIANT_FRAME_INTERVAL:
+					_giant_frame_timer -= GIANT_FRAME_INTERVAL
+					_giant_frame = 2 if _giant_frame == 1 else 1
+					_update_giant_texture()
+			return
 		"hog_rider":
 			if _anim_state == "walk":
 				_hogrider_frame_timer += delta
@@ -362,7 +452,7 @@ func _lean(ap: float) -> float:
 # ── Dispatch ──────────────────────────────────────────────────────────────────
 
 func _draw() -> void:
-	if _card_id in ["knight", "archer", "mini_pekka", "goblin_gang", "spear_goblin", "hog_rider", "wizard"]:
+	if _card_id in ["knight", "archer", "mini_pekka", "goblin_gang", "spear_goblin", "hog_rider", "wizard", "barbarian", "giant"]:
 		return   # rendered by Sprite2D child node
 	var wp := 0.0   # walk phase 0..TAU
 	var ap := 0.0   # attack phase 0..1

@@ -12,11 +12,11 @@ const SIDE_W    := (SCREEN_W - CENTER_W) * 0.5  # 608
 
 const CARD_W    := 108.0   # 3× knight card width  (36 px native)
 const CARD_H    := 132.0   # 3× knight card height (44 px native) — 9:11 ratio
-const CARD_PAD  := 5.0
+const CARD_PAD  := 12.0
 const NEXT_W    := 108.0   # same size as hand cards
 const NEXT_H    := 132.0
 
-const ELIX_H    := 32.0
+const ELIX_H    := 44.0
 const ELIX_Y    := PANEL_Y + PANEL_H - ELIX_H - 10.0
 
 const ELIX_COL  := Color(0.58, 0.08, 0.88)
@@ -57,8 +57,8 @@ var _p2_card_icon:  Array = []
 
 var _p1_next_name:  Label
 var _p2_next_name:  Label
-var _p1_next_cost:  Label
-var _p2_next_cost:  Label
+var _p1_next_cost:  TextureRect
+var _p2_next_cost:  TextureRect
 var _p1_next_root:  Control
 var _p2_next_root:  Control
 var _p1_next_icon:  TextureRect
@@ -74,6 +74,7 @@ var _de_tween:           Tween
 var _center_elix_icon:   TextureRect
 var _elix1_tex:          Texture2D
 var _elix2_tex:          Texture2D
+var _card_bg_tex:        Texture2D
 
 # ── Animation state ───────────────────────────────────────────────────────────
 var _p1_last_ids:  Array[String] = ["","","",""]
@@ -97,6 +98,7 @@ func _ready() -> void:
 	_elix_prev_tex = load("res://assets/elixer_bar_assets/elixer_bar_prev_chunck.png") as Texture2D
 	_elix_curr_tex = load("res://assets/elixer_bar_assets/elixer_bar_curr_chunk.png")  as Texture2D
 	_elix_base_tex = load("res://assets/elixer_bar_assets/base_elixer.png")            as Texture2D
+	_card_bg_tex   = load("res://assets/background_assets/cards_deck_background.png")   as Texture2D
 	# Number icon textures 1-9
 	for n in range(1, 11):
 		_elix_num_textures[n] = load("res://assets/elixer_bar_assets/elixer_%d.png" % n) as Texture2D
@@ -119,6 +121,16 @@ func _build_bg() -> void:
 	sep.position = Vector2(0.0, PANEL_Y)
 	sep.size     = Vector2(SCREEN_W, 1.0)
 	add_child(sep)
+
+	# Full-width wood tray — sits behind all card/elixir elements
+	var tray := TextureRect.new()
+	tray.texture        = _card_bg_tex
+	tray.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	tray.expand_mode    = TextureRect.EXPAND_IGNORE_SIZE
+	tray.stretch_mode   = TextureRect.STRETCH_SCALE
+	tray.position       = Vector2(0.0, PANEL_Y + 1.0)
+	tray.size           = Vector2(SCREEN_W, PANEL_H - ELIX_H - 18.0)
+	add_child(tray)
 
 func _build_timer() -> void:
 	_timer_bg = ColorRect.new()
@@ -203,6 +215,13 @@ func _load_card_icon(card_id: String) -> Texture2D:
 	var compact := "res://assets/" + compact_id + "_assets/" + compact_id + "_card.png"
 	if ResourceLoader.exists(compact):
 		return load(compact) as Texture2D
+	# Handle misspelled folder names (e.g. giant → gaint)
+	const FOLDER_OVERRIDES: Dictionary = {"giant": "gaint"}
+	if FOLDER_OVERRIDES.has(card_id):
+		var alt: String = FOLDER_OVERRIDES[card_id]
+		var alt_path := "res://assets/" + alt + "_assets/" + alt + "_card.png"
+		if ResourceLoader.exists(alt_path):
+			return load(alt_path) as Texture2D
 	# Fallback: root assets folder
 	var root := "res://assets/" + card_id + "_card.png"
 	if ResourceLoader.exists(root):
@@ -215,18 +234,18 @@ func _build_side(p: int) -> void:
 	var tc      := P1_COL if is_p1 else P2_COL
 	var sec_x   := 0.0 if is_p1 else SIDE_W + CENTER_W
 
-	# Team accent line
+	# Team accent line — same thickness both sides
 	var accent := ColorRect.new()
 	accent.color    = tc
 	accent.position = Vector2(sec_x, PANEL_Y)
-	accent.size     = Vector2(SIDE_W, 3.0)
+	accent.size     = Vector2(SIDE_W, 5.0)
 	add_child(accent)
 
 	# Subtle team tint
 	var tint := ColorRect.new()
 	tint.color    = Color(tc.r, tc.g, tc.b, 0.05)
-	tint.position = Vector2(sec_x, PANEL_Y + 3.0)
-	tint.size     = Vector2(SIDE_W, PANEL_H - 3.0)
+	tint.position = Vector2(sec_x, PANEL_Y + 5.0)
+	tint.size     = Vector2(SIDE_W, PANEL_H - 5.0)
 	add_child(tint)
 
 	# ── Layout: for P1 [NEXT][1][2][3][4], for P2 [1][2][3][4][NEXT]
@@ -246,7 +265,7 @@ func _build_side(p: int) -> void:
 
 # ── Next card preview ─────────────────────────────────────────────────────────
 func _build_next_card(p: int, nx: float, tc: Color) -> void:
-	const NEXT_COST_ROW := 26.0
+	const NEXT_COST_ROW := 42.0
 	var is_p1 := p == 0
 
 	# Root: "NEXT" label + image + cost below image
@@ -261,15 +280,17 @@ func _build_next_card(p: int, nx: float, tc: Color) -> void:
 	var lbl := Label.new()
 	lbl.text = "NEXT"
 	lbl.position = Vector2(0.0, 0.0)
-	lbl.size     = Vector2(NEXT_W, 16.0)
+	lbl.size     = Vector2(NEXT_W, 18.0)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 11)
-	lbl.add_theme_color_override("font_color", Color(tc.r, tc.g, tc.b, 0.80))
+	lbl.add_theme_font_size_override("font_size", 20)
+	lbl.add_theme_color_override("font_color", Color.WHITE)
+	lbl.add_theme_constant_override("outline_size", 4)
+	lbl.add_theme_color_override("font_outline_color", Color.BLACK)
 	root.add_child(lbl)
 
-	# 1. Dark background — wraps image
+	# 1. Transparent backing (tray texture shows through)
 	var nbg := ColorRect.new()
-	nbg.color    = CARD_BG
+	nbg.color    = Color(0.0, 0.0, 0.0, 0.0)
 	nbg.position = Vector2(0.0, 16.0)
 	nbg.size     = Vector2(NEXT_W, NEXT_H)
 	root.add_child(nbg)
@@ -285,7 +306,7 @@ func _build_next_card(p: int, nx: float, tc: Color) -> void:
 	nn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(nn)
 
-	# 3. Card icon — fills image area (added after bg, before frame overlay)
+	# 3. Card icon — fills image area
 	var ni := TextureRect.new()
 	ni.position     = Vector2(0.0, 16.0)
 	ni.size         = Vector2(NEXT_W, NEXT_H)
@@ -301,14 +322,14 @@ func _build_next_card(p: int, nx: float, tc: Color) -> void:
 	bar.size     = Vector2(3.0, NEXT_H)
 	root.add_child(bar)
 
-	# 5. Elixir cost — below image
-	var nc := Label.new()
-	nc.position = Vector2(0.0, 16.0 + NEXT_H + 2.0)
-	nc.size     = Vector2(NEXT_W, NEXT_COST_ROW - 2.0)
-	nc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	nc.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
-	nc.add_theme_font_size_override("font_size", 17)
-	nc.add_theme_color_override("font_color", ELIX_COL)
+	# 5. Elixir cost icon — below image
+	var nc_h := NEXT_COST_ROW - 4.0
+	var nc := TextureRect.new()
+	nc.position      = Vector2(NEXT_W * 0.5 - nc_h * 0.5, 16.0 + NEXT_H + 2.0)
+	nc.size          = Vector2(nc_h, nc_h)
+	nc.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
+	nc.stretch_mode  = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	nc.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	root.add_child(nc)
 
 	if is_p1: _p1_next_name = nn; _p1_next_cost = nc; _p1_next_icon = ni
@@ -337,7 +358,7 @@ func _build_hand(p: int, hx: float, sec_x: float, tc: Color) -> void:
 	var card_flash: Array = []
 	var card_icons: Array = []
 
-	const COST_ROW := 26.0   # height of cost label row below image
+	const COST_ROW := 42.0   # height of cost label row below image
 
 	for i in range(4):
 		var cx := hx + i * (CARD_W + CARD_PAD)
@@ -352,9 +373,9 @@ func _build_hand(p: int, hx: float, sec_x: float, tc: Color) -> void:
 		add_child(root)
 		card_roots.append(root)
 
-		# 1. Dark background — wraps tightly around the image
+		# 1. Transparent backing (tray texture shows through)
 		var cbg := ColorRect.new()
-		cbg.color    = CARD_BG
+		cbg.color    = Color(0.0, 0.0, 0.0, 0.0)
 		cbg.position = Vector2.ZERO
 		cbg.size     = Vector2(CARD_W, CARD_H)
 		root.add_child(cbg)
@@ -372,7 +393,7 @@ func _build_hand(p: int, hx: float, sec_x: float, tc: Color) -> void:
 		root.add_child(name_lbl)
 		card_names.append(name_lbl)
 
-		# 3. Card icon — fills image area exactly (added after bg, before overlays)
+		# 3. Card icon — fills image area
 		var icon := TextureRect.new()
 		icon.position     = Vector2.ZERO
 		icon.size         = Vector2(CARD_W, CARD_H)
@@ -382,44 +403,28 @@ func _build_hand(p: int, hx: float, sec_x: float, tc: Color) -> void:
 		root.add_child(icon)
 		card_icons.append(icon)
 
-		# 4. Border frame overlaid on image: top strip (button color) + left bar (team color)
-		var strip := ColorRect.new()
-		strip.color    = Color(bc.r, bc.g, bc.b, 0.85)
-		strip.position = Vector2.ZERO
-		strip.size     = Vector2(CARD_W, 4.0)
-		root.add_child(strip)
+		# 4. Button-color border (4 sides, no number)
+		const BW := 3.0
+		for border in [
+			[Vector2(0, 0),              Vector2(CARD_W, BW)],
+			[Vector2(0, CARD_H - BW),    Vector2(CARD_W, BW)],
+			[Vector2(0, 0),              Vector2(BW, CARD_H)],
+			[Vector2(CARD_W - BW, 0),    Vector2(BW, CARD_H)],
+		]:
+			var br := ColorRect.new()
+			br.color    = Color(bc.r, bc.g, bc.b, 0.90)
+			br.position = border[0]
+			br.size     = border[1]
+			root.add_child(br)
 
-		var lbar := ColorRect.new()
-		lbar.color    = Color(tc.r, tc.g, tc.b, 0.70)
-		lbar.position = Vector2.ZERO
-		lbar.size     = Vector2(3.0, CARD_H)
-		root.add_child(lbar)
-
-		# 5. Number badge — top-right corner, on top of image
-		var badge_bg := ColorRect.new()
-		badge_bg.color    = Color(bc.r, bc.g, bc.b, 0.92)
-		badge_bg.position = Vector2(CARD_W - 22.0, 4.0)
-		badge_bg.size     = Vector2(18.0, 18.0)
-		root.add_child(badge_bg)
-
-		var badge_lbl := Label.new()
-		badge_lbl.text     = str(i + 1)
-		badge_lbl.position = Vector2(CARD_W - 22.0, 3.0)
-		badge_lbl.size     = Vector2(18.0, 18.0)
-		badge_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		badge_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
-		badge_lbl.add_theme_font_size_override("font_size", 12)
-		badge_lbl.add_theme_color_override("font_color", Color(0.05, 0.05, 0.05))
-		root.add_child(badge_lbl)
-
-		# 6. Elixir cost — below image, always visible
-		var cost_lbl := Label.new()
-		cost_lbl.position = Vector2(0.0, CARD_H + 2.0)
-		cost_lbl.size     = Vector2(CARD_W, COST_ROW - 2.0)
-		cost_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		cost_lbl.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
-		cost_lbl.add_theme_font_size_override("font_size", 17)
-		cost_lbl.add_theme_color_override("font_color", ELIX_COL)
+		# 6. Elixir cost icon — below image, always visible
+		var cost_lbl := TextureRect.new()
+		var icon_h := COST_ROW - 6.0
+		cost_lbl.position      = Vector2(CARD_W * 0.5 - icon_h * 0.5, CARD_H + 3.0)
+		cost_lbl.size          = Vector2(icon_h, icon_h)
+		cost_lbl.expand_mode   = TextureRect.EXPAND_IGNORE_SIZE
+		cost_lbl.stretch_mode  = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		cost_lbl.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		root.add_child(cost_lbl)
 		card_costs.append(cost_lbl)
 
@@ -591,14 +596,15 @@ func _refresh_hand(p: int, deck: Deck, elixir: float) -> void:
 
 		# Text
 		names[i].text = card.display_name
-		costs[i].text = "◆ %d" % card.cost
+		costs[i].texture = _elix_num_textures.get(card.cost, null)
 
 		var total := card.troop_count + card.secondary_count
 		cnts[i].text = "×%d" % total if total > 1 else ""
 
 		# Dim if can't afford
 		var dim := 0.38 if not afford else 1.0
-		bgs[i].color      = Color(CARD_BG.r * dim, CARD_BG.g * dim, CARD_BG.b * dim + 0.04 * (1.0 - dim))
+		bgs[i].modulate   = Color(dim, dim, dim)
+		costs[i].modulate = Color(dim, dim, dim)
 		names[i].add_theme_color_override("font_color",
 				Color.WHITE if afford else Color(0.40, 0.40, 0.40))
 		costs[i].add_theme_color_override("font_color",
@@ -610,7 +616,7 @@ func _refresh_next(p: int, deck: Deck) -> void:
 	var ni := _p1_next_icon if p == 0 else _p2_next_icon
 	var card := deck.next_card
 	nn.text = card.display_name
-	nc.text = "◆ %d" % card.cost
+	nc.texture = _elix_num_textures.get(card.cost, null)
 	if ni != null:
 		var last_next_id := _p1_next_last_id if p == 0 else _p2_next_last_id
 		if card.card_id != last_next_id:
