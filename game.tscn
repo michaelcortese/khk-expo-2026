@@ -13,16 +13,16 @@ position = Vector2(480, 240)
 position = Vector2(51, 240)
 
 [node name="Princess_Tower1_P1" parent="." unique_id=957856165 instance=ExtResource("2_e2o6t")]
-position = Vector2(220, 90)
+position = Vector2(220, 98)
 
 [node name="Princess_Tower2_P1" parent="." unique_id=1908782305 instance=ExtResource("2_e2o6t")]
-position = Vector2(220, 339)
+position = Vector2(220, 329)
 
 [node name="King_Tower_P2" parent="." unique_id=768260525 instance=ExtResource("2_e2o6t")]
 position = Vector2(912, 240)
 
 [node name="Princess_Tower1_P2" parent="." unique_id=321096686 instance=ExtResource("2_e2o6t")]
-position = Vector2(740, 90)
+position = Vector2(740, 98)
 
 [node name="Princess_Tower2_P2" parent="." unique_id=1541098631 instance=ExtResource("2_e2o6t")]
-position = Vector2(740, 339)
+position = Vector2(740, 329)
