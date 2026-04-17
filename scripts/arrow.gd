@@ -3,6 +3,14 @@ extends Node2D
 # Projectile spawned by ranged units.
 # Supports single-target and splash (AoE) damage.
 
+# Cached once across all projectile instances
+static var _hit_frames: Array = []
+static func _ensure_hit_frames() -> void:
+	if _hit_frames.size() > 0:
+		return
+	for i in range(1, 5):
+		_hit_frames.append(load("res://assets/hitpoints_assets/arrow_hit_frame%d.png" % i) as Texture2D)
+
 const SPEED: float = 380.0
 
 var _target_node:  Node2D  = null
@@ -94,10 +102,8 @@ func _play_hit_effect() -> void:
 	# Reset rotation so the hit effect always faces upright
 	rotation = 0.0
 
-	# Load the 4 hit frames
-	var frames: Array = []
-	for i in range(1, 5):
-		frames.append(load("res://assets/hitpoints_assets/arrow_hit_frame%d.png" % i) as Texture2D)
+	_ensure_hit_frames()
+	var frames: Array = _hit_frames
 
 	var sp := Sprite2D.new()
 	sp.texture        = frames[0]

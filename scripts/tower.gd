@@ -12,6 +12,7 @@ var hp: int             = 0
 var is_alive: bool      = true
 
 var _attack_timer: float   = 0.0
+var _pulse_timer:  float   = 0.0
 var _target: Node2D        = null
 var _is_active: bool       = false   # king towers start dormant
 var _losing_hp_tex: Texture2D = null
@@ -82,9 +83,12 @@ func _process(delta: float) -> void:
 		return
 	if is_king_tower and not _is_active:
 		return
-	# Drive continuous redraws while HP is critical so the pulse animates
+	# Drive redraws while HP is critical for the pulse overlay (~20 fps is plenty)
 	if float(hp) / float(max_hp) < 0.25:
-		queue_redraw()
+		_pulse_timer += delta
+		if _pulse_timer >= 0.05:
+			_pulse_timer = 0.0
+			queue_redraw()
 	_attack_timer -= delta
 	_validate_target()
 	if _target == null:

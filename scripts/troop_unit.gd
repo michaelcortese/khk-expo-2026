@@ -374,22 +374,27 @@ func _spawn_damage_number(amount: int) -> void:
 	get_parent().add_child(dn)
 	dn.call("setup", amount, global_position + Vector2(randf_range(-8.0, 8.0), -18.0))
 
-func _spawn_swing_effect() -> void:
-	if get_parent() == null:
+static var _swing_frames: Array = []
+static func _ensure_swing_frames() -> void:
+	if _swing_frames.size() > 0:
 		return
-	var frames: Array = [
+	_swing_frames = [
 		load("res://assets/hitpoints_assets/sword_swing_frame2.png") as Texture2D,
 		load("res://assets/hitpoints_assets/sword_swing_frame3.png") as Texture2D,
 	]
+
+func _spawn_swing_effect() -> void:
+	if get_parent() == null:
+		return
+	_ensure_swing_frames()
+	var frames: Array = _swing_frames
 	var sp := Sprite2D.new()
 	sp.texture        = frames[0]
 	sp.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sp.scale          = Vector2(2.0, 2.0)
 	sp.flip_h         = not _facing_right
-	var hit_pos: Vector2 = _target.global_position \
-			if _target != null and is_instance_valid(_target) \
-			else global_position
-	sp.position = hit_pos
+	var forward := 14.0 if _facing_right else -14.0
+	sp.position = global_position + Vector2(forward, -8.0)
 	get_parent().add_child(sp)
 	const FRAME_DUR := 0.07
 	var tw := create_tween()
