@@ -274,10 +274,7 @@ func _update_facing() -> void:
 
 	if _sprite:
 		_sprite.call("set_direction", dir)
-		# Sprite-sheet units have explicit left/right frames — no scale flip needed
-		var cid: String = get_meta("card_id", "")
-		if cid not in ["knight", "archer", "mini_pekka", "goblin_gang", "spear_goblin"]:
-			_sprite.scale.x = abs(_sprite.scale.x) * (1.0 if _facing_right else -1.0)
+		# All units use sprite sheets with explicit directional frames — no scale flip needed
 
 # ── Target acquisition ────────────────────────────────────────────────────────
 
@@ -424,12 +421,13 @@ func _spawn_losing_hp() -> void:
 func _draw() -> void:
 	if _state == UnitState.DEAD:
 		return
-	var pct   := float(hp) / float(max_hp)
-	var bar_w := 30.0
-	var bar_h :=  5.0
-	var bx    := -bar_w * 0.5
+	var pct    := float(hp) / float(max_hp)
+	var is_giant: bool = get_meta("card_id", "") == "giant"
+	var bar_w  := 46.0 if is_giant else 30.0
+	var bar_h  := 9.0  if is_giant else 5.0
+	var bx     := -bar_w * 0.5
 	# Giant is taller, push the bar above its head
-	var by    := -34.0 if get_meta("card_id", "") == "giant" else -28.0
+	var by     := -38.0 if is_giant else -28.0
 	var fill_w  := bar_w * pct
 	var top_h   := bar_h * 0.58
 	var bot_h   := bar_h - top_h

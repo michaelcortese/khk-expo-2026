@@ -101,14 +101,16 @@ func _build_cursor() -> void:
 	_cursor_sprite.position       = cursor_position
 	get_parent().add_child(_cursor_sprite)
 
-	# Deploy zone outline — extend to the outer screen edge for each side
+	# Deploy zone outline — extend to the outer screen edge, skip the inner
+	# vertical edge by the bridge so there's no line cluttering the river area.
 	var outline_min := zone_min
 	var outline_max := zone_max
 	if player_index == 0:
 		outline_min.x = -200.0   # extend to left screen edge
+		_make_zone_outline(Rect2(outline_min, outline_max - outline_min), "right")
 	else:
 		outline_max.x = 1200.0   # extend to right screen edge
-	_make_zone_outline(Rect2(outline_min, outline_max - outline_min))
+		_make_zone_outline(Rect2(outline_min, outline_max - outline_min), "left")
 
 func _process(delta: float) -> void:
 	for i in range(4):
@@ -149,18 +151,34 @@ func _input(event: InputEvent) -> void:
 ## Unlock a new rectangle the cursor can enter (called when an enemy tower dies).
 func add_zone(rect: Rect2) -> void:
 	_extra_zones.append(rect)
-	_make_zone_outline(rect)
+	# Skip the inner vertical edge (shared with main zone) and the horizontal
+	# edge that sits in the middle of the board (bottom of top-lane zones,
+	# top of bottom-lane zones).
+	var skip_v := "left"   if player_index == 0 else "right"
+	var skip_h := "bottom" if rect.position.y < 10.0 else "top"
+	_make_zone_outline(rect, skip_v, skip_h)
 
-func _make_zone_outline(rect: Rect2) -> void:
-	var ol := Line2D.new()
-	ol.width         = 4.0
-	ol.default_color = Color(cursor_color.r, cursor_color.g, cursor_color.b, 0.80)
-	ol.add_point(rect.position)
-	ol.add_point(Vector2(rect.end.x, rect.position.y))
-	ol.add_point(rect.end)
-	ol.add_point(Vector2(rect.position.x, rect.end.y))
-	ol.add_point(rect.position)
-	get_parent().add_child(ol)
+func _make_zone_outline(rect: Rect2, skip_a: String = "", skip_b: String = "") -> void:
+	var col := Color(cursor_color.r, cursor_color.g, cursor_color.b, 0.80)
+	var tl := rect.position
+	var tr := Vector2(rect.end.x,      rect.position.y)
+	var br := rect.end
+	var bl := Vector2(rect.position.x, rect.end.y)
+	var sides := [
+		["top",    tl, tr],
+		["right",  tr, br],
+		["bottom", br, bl],
+		["left",   bl, tl],
+	]
+	for side in sides:
+		if side[0] == skip_a or side[0] == skip_b:
+			continue
+		var ol := Line2D.new()
+		ol.width         = 4.0
+		ol.default_color = col
+		ol.add_point(side[1])
+		ol.add_point(side[2])
+		get_parent().add_child(ol)
 
 func _in_any_zone(pos: Vector2) -> bool:
 	if pos.x >= zone_min.x and pos.x <= zone_max.x \

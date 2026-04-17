@@ -537,6 +537,8 @@ func _show_end_screen(msg: String, p1c: int = 0, p2c: int = 0) -> void:
 	tween.tween_property(prompt, "modulate:a", 0.15, 0.6)
 	tween.tween_property(prompt, "modulate:a", 1.0,  0.6)
 
+	# Lock input for 5 seconds before accepting menu return
+	await get_tree().create_timer(5.0).timeout
 	_awaiting_menu = true
 
 var _awaiting_menu: bool = false
