@@ -14,8 +14,11 @@ var cursor_color: Color  = Color(0.0, 0.5, 1.0, 0.9)
 var cursor_position: Vector2
 var _extra_zones: Array[Rect2] = []
 
-var _cross_h: Line2D
-var _cross_v: Line2D
+var _cursor_sprite:      Sprite2D = null
+var _cursor_frames:      Array    = []
+var _cursor_cur_frame:   int      = 0
+var _cursor_frame_timer: float    = 0.0
+const CURSOR_FRAME_INTERVAL := 0.28
 
 # Keyboard fallback
 var _kb_left:    Key
@@ -82,36 +85,30 @@ func _setup_keyboard() -> void:
 		_kb_buttons = [KEY_I, KEY_J, KEY_K, KEY_L]
 
 func _build_cursor() -> void:
-	var arm := 18.0
-	var gap := 5.0    # gap in the middle so the crosshair doesn't obscure the target
-	var w   := 2.5
+	var prefix := "blue" if player_index == 0 else "red"
+	_cursor_frames = [
+		load("res://assets/hitpoints_assets/%s_cursor_frame1.png" % prefix) as Texture2D,
+		load("res://assets/hitpoints_assets/%s_cursor_frame2.png" % prefix) as Texture2D,
+	]
+	_cursor_sprite                = Sprite2D.new()
+	_cursor_sprite.texture        = _cursor_frames[0]
+	_cursor_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_cursor_sprite.scale          = Vector2(2.0, 2.0)
+	_cursor_sprite.position       = cursor_position
+	get_parent().add_child(_cursor_sprite)
 
-	_cross_h = Line2D.new()
-	_cross_h.width         = w
-	_cross_h.default_color = cursor_color
-	_cross_h.add_point(Vector2(-arm, 0.0))
-	_cross_h.add_point(Vector2(-gap, 0.0))
-	_cross_h.add_point(Vector2( gap, 0.0))
-	_cross_h.add_point(Vector2( arm, 0.0))
-	get_parent().add_child(_cross_h)
-
-	_cross_v = Line2D.new()
-	_cross_v.width         = w
-	_cross_v.default_color = cursor_color
-	_cross_v.add_point(Vector2(0.0, -arm))
-	_cross_v.add_point(Vector2(0.0, -gap))
-	_cross_v.add_point(Vector2(0.0,  gap))
-	_cross_v.add_point(Vector2(0.0,  arm))
-	get_parent().add_child(_cross_v)
-
-	_cross_h.position = cursor_position
-	_cross_v.position = cursor_position
-
-	# Draw the main deploy zone outline
+	# Deploy zone outline
 	_make_zone_outline(Rect2(zone_min, zone_max - zone_min))
 
 func _process(delta: float) -> void:
 	_move_cursor(delta)
+	# Animate cursor frames
+	if _cursor_sprite != null and _cursor_frames.size() == 2:
+		_cursor_frame_timer += delta
+		if _cursor_frame_timer >= CURSOR_FRAME_INTERVAL:
+			_cursor_frame_timer  -= CURSOR_FRAME_INTERVAL
+			_cursor_cur_frame     = 1 - _cursor_cur_frame
+			_cursor_sprite.texture = _cursor_frames[_cursor_cur_frame]
 
 func _input(event: InputEvent) -> void:
 	# Joystick buttons
@@ -185,5 +182,4 @@ func _move_cursor(delta: float) -> void:
 	var desired := cursor_position + Vector2(ax, ay) * cursor_speed * delta
 	cursor_position = _clamp_to_zones(desired)
 
-	if _cross_h: _cross_h.position = cursor_position
-	if _cross_v: _cross_v.position = cursor_position
+	if _cursor_sprite: _cursor_sprite.position = cursor_position

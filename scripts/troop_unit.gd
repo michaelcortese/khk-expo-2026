@@ -17,12 +17,13 @@ var is_splash: bool               = false
 var splash_radius: float          = 0.0
 
 var _audio: Node = null
+var _losing_hp_tex: Texture2D = null
 
 var _target: Node2D              = null
 var _enemy_king_pos: Vector2     = Vector2.ZERO
 var _spawn_lane: int             = 0   # 0 = top (y<240), 1 = bottom (y>=240)
 var _state: UnitState            = UnitState.IDLE
-var _body: Polygon2D             = null
+var _sprite: Node2D              = null
 var _facing_right: bool          = true
 
 # River / bridge constants (must match field_bg.gd and game_manager.gd)
@@ -65,6 +66,7 @@ func init(card: CardData, player_idx: int, enemy_king_position: Vector2) -> void
 	is_splash               = card.is_splash
 	splash_radius           = card.splash_radius
 	set_meta("card_id", card.card_id)
+	_losing_hp_tex = load("res://assets/hitpoints_assets/losing_hp.png") as Texture2D
 	add_to_group("troops")
 	collision_layer = 2   # troops are on layer 2 — don't physically block each other
 	collision_mask  = 4   # only blocked by layer 3 (river walls) — not by tower shapes
@@ -94,67 +96,17 @@ func _ready() -> void:
 	# Visuals built in init() after card_id is set — nothing to do here.
 
 func _build_visuals() -> void:
-	if _body != null:
+	if _sprite != null:
 		return   # already built
 
-	var type_col: Color
-	match get_meta("card_id", "knight"):
-		"knight":       type_col = Color(0.65, 0.65, 0.65)
-		"archer":       type_col = Color(0.60, 0.20, 0.80)
-		"wizard":       type_col = Color(0.20, 0.55, 1.00)
-		"barbarian":    type_col = Color(1.00, 0.85, 0.00)
-		"giant":        type_col = Color(0.50, 0.30, 0.10)
-		"hog_rider":    type_col = Color(0.90, 0.50, 0.00)
-		"mini_pekka":   type_col = Color(0.30, 0.00, 0.45)
-		"goblin":       type_col = Color(0.15, 0.80, 0.20)
-		"spear_goblin": type_col = Color(0.10, 0.65, 0.15)
-		_:              type_col = Color(1.00, 1.00, 1.00)
-
-	var team_col := Color(0.0, 0.4, 1.0) if owner_player == 0 else Color(1.0, 0.1, 0.1)
-	var col      := type_col.lerp(team_col, 0.35)
-
-	var poly: PackedVector2Array
-	match get_meta("card_id", "knight"):
-		"knight":       # square
-			poly = PackedVector2Array([
-				Vector2(-10,-10), Vector2(10,-10), Vector2(10,10), Vector2(-10,10)])
-		"archer":       # diamond
-			poly = PackedVector2Array([
-				Vector2(0,-12), Vector2(12,0), Vector2(0,12), Vector2(-12,0)])
-		"wizard":       # octagon (large)
-			poly = PackedVector2Array([
-				Vector2(11,0), Vector2(8,8), Vector2(0,11), Vector2(-8,8),
-				Vector2(-11,0), Vector2(-8,-8), Vector2(0,-11), Vector2(8,-8)])
-		"barbarian":    # wide hexagon
-			poly = PackedVector2Array([
-				Vector2(-6,-10), Vector2(6,-10), Vector2(12,0),
-				Vector2(6,10),   Vector2(-6,10), Vector2(-12,0)])
-		"giant":        # large octagon
-			poly = PackedVector2Array([
-				Vector2(14,0),  Vector2(10,10),  Vector2(0,14),  Vector2(-10,10),
-				Vector2(-14,0), Vector2(-10,-10), Vector2(0,-14), Vector2(10,-10)])
-		"hog_rider":    # forward-pointing triangle
-			poly = PackedVector2Array([
-				Vector2(13,0), Vector2(-8,-10), Vector2(-8,10)])
-		"mini_pekka":   # cross / plus
-			poly = PackedVector2Array([
-				Vector2(-3,-10), Vector2(3,-10), Vector2(3,-3),  Vector2(10,-3),
-				Vector2(10,3),   Vector2(3,3),   Vector2(3,10),  Vector2(-3,10),
-				Vector2(-3,3),   Vector2(-10,3), Vector2(-10,-3),Vector2(-3,-3)])
-		"goblin":       # small downward triangle
-			poly = PackedVector2Array([
-				Vector2(0,8), Vector2(-7,-6), Vector2(7,-6)])
-		"spear_goblin": # small upward triangle
-			poly = PackedVector2Array([
-				Vector2(0,-8), Vector2(7,6), Vector2(-7,6)])
-		_:
-			poly = PackedVector2Array([
-				Vector2(-10,-10), Vector2(10,-10), Vector2(10,10), Vector2(-10,10)])
-
-	_body         = Polygon2D.new()
-	_body.color   = col
-	_body.polygon = poly
-	add_child(_body)
+	var s := Node2D.new()
+	s.set_script(load("res://scripts/troop_sprite.gd"))
+	add_child(s)
+	s.call("setup", get_meta("card_id", "knight"), owner_player)
+	# Giant is larger; scale it up so it reads as a big threat on screen
+	if get_meta("card_id", "knight") == "giant":
+		s.scale = Vector2(1.35, 1.35)
+	_sprite = s
 
 # ── State machine ─────────────────────────────────────────────────────────────
 
@@ -166,13 +118,19 @@ func _set_state(new_state: UnitState) -> void:
 
 func _on_state_entered(s: UnitState) -> void:
 	match s:
+		UnitState.IDLE:
+			if _sprite: _sprite.call("set_anim_state", "idle")
+		UnitState.WALK:
+			if _sprite: _sprite.call("set_anim_state", "walk")
 		UnitState.ATTACK:
+			if _sprite: _sprite.call("set_anim_state", "attack")
 			# Bright flash at the start of each swing
-			if _body:
+			if _sprite:
 				var tw := create_tween()
-				tw.tween_property(_body, "modulate", Color(2.0, 2.0, 2.0), 0.07)
-				tw.tween_property(_body, "modulate", Color(1.0, 1.0, 1.0), 0.13)
+				tw.tween_property(_sprite, "modulate", Color(2.0, 2.0, 2.0), 0.07)
+				tw.tween_property(_sprite, "modulate", Color(1.0, 1.0, 1.0), 0.13)
 		UnitState.DEAD:
+			if _sprite: _sprite.call("set_anim_state", "idle")
 			is_alive = false
 			remove_from_group("troops")
 			_start_death_tween()
@@ -236,6 +194,7 @@ func _handle_attack(delta: float) -> void:
 			else:
 				_target.call("take_damage", attack_damage)
 				_play_sfx("hit", -6.0)
+				_spawn_swing_effect()
 
 func _play_sfx(name: String, vol: float = 0.0) -> void:
 	if _audio == null:
@@ -249,7 +208,7 @@ func _spawn_arrow() -> void:
 	var arrow := Node2D.new()
 	arrow.set_script(load("res://scripts/arrow.gd"))
 	get_parent().add_child(arrow)
-	var col := _body.color if _body != null else Color(0.85, 0.70, 0.25)
+	var col := Color(0.20, 0.55, 1.0) if owner_player == 0 else Color(1.0, 0.20, 0.20)
 	arrow.call("launch", global_position, _target, attack_damage, col,
 			splash_radius if is_splash else 0.0, owner_player)
 
@@ -297,12 +256,26 @@ func _handle_movement(delta: float) -> void:
 		_set_state(UnitState.IDLE)
 
 func _update_facing() -> void:
-	if velocity.x > 5.0:
-		_facing_right = true
-	elif velocity.x < -5.0:
-		_facing_right = false
-	if _body:
-		_body.scale.x = 1.0 if _facing_right else -1.0
+	# Determine 4-way direction from velocity
+	var dir := "right"
+	if abs(velocity.y) > abs(velocity.x):
+		dir = "down" if velocity.y > 0.0 else "up"
+	else:
+		if velocity.x > 5.0:
+			_facing_right = true
+			dir = "right"
+		elif velocity.x < -5.0:
+			_facing_right = false
+			dir = "left"
+		else:
+			dir = "right" if _facing_right else "left"
+
+	if _sprite:
+		_sprite.call("set_direction", dir)
+		# Sprite-sheet units have explicit left/right frames — no scale flip needed
+		var cid: String = get_meta("card_id", "")
+		if cid not in ["knight", "archer", "mini_pekka", "goblin_gang", "spear_goblin"]:
+			_sprite.scale.x = abs(_sprite.scale.x) * (1.0 if _facing_right else -1.0)
 
 # ── Target acquisition ────────────────────────────────────────────────────────
 
@@ -384,11 +357,12 @@ func take_damage(amount: int) -> void:
 	hp = max(0, hp - amount)
 	queue_redraw()
 	_spawn_damage_number(amount)
+	_spawn_losing_hp()
 	# Hit-flash
-	if _body and hp > 0:
+	if _sprite and hp > 0:
 		var tw := create_tween()
-		tw.tween_property(_body, "modulate", Color(2.5, 0.4, 0.4), 0.05)
-		tw.tween_property(_body, "modulate", Color(1.0, 1.0, 1.0), 0.10)
+		tw.tween_property(_sprite, "modulate", Color(2.5, 0.4, 0.4), 0.05)
+		tw.tween_property(_sprite, "modulate", Color(1.0, 1.0, 1.0), 0.10)
 	if hp == 0:
 		_set_state(UnitState.DEAD)
 
@@ -400,6 +374,46 @@ func _spawn_damage_number(amount: int) -> void:
 	get_parent().add_child(dn)
 	dn.call("setup", amount, global_position + Vector2(randf_range(-8.0, 8.0), -18.0))
 
+func _spawn_swing_effect() -> void:
+	if get_parent() == null:
+		return
+	var frames: Array = [
+		load("res://assets/hitpoints_assets/sword_swing_frame2.png") as Texture2D,
+		load("res://assets/hitpoints_assets/sword_swing_frame3.png") as Texture2D,
+	]
+	var sp := Sprite2D.new()
+	sp.texture        = frames[0]
+	sp.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sp.scale          = Vector2(2.0, 2.0)
+	sp.flip_h         = not _facing_right
+	var hit_pos: Vector2 = _target.global_position \
+			if _target != null and is_instance_valid(_target) \
+			else global_position
+	sp.position = hit_pos
+	get_parent().add_child(sp)
+	const FRAME_DUR := 0.07
+	var tw := create_tween()
+	tw.tween_interval(FRAME_DUR)
+	tw.tween_callback(func(): sp.texture = frames[1])
+	tw.tween_interval(FRAME_DUR)
+	tw.tween_callback(sp.queue_free)
+
+func _spawn_losing_hp() -> void:
+	if _losing_hp_tex == null or get_parent() == null:
+		return
+	var by: float = -34.0 if get_meta("card_id", "") == "giant" else -28.0
+	var sp := Sprite2D.new()
+	sp.texture        = _losing_hp_tex
+	sp.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sp.scale          = Vector2(1.5, 1.5)
+	sp.position       = global_position + Vector2(20.0, by)
+	get_parent().add_child(sp)
+	var tw := sp.create_tween().set_parallel(true)
+	tw.tween_property(sp, "position:y", sp.position.y - 14.0, 0.6)
+	tw.tween_property(sp, "modulate:a", 0.0,                  0.6)
+	tw.set_parallel(false)
+	tw.tween_callback(sp.queue_free)
+
 func _draw() -> void:
 	if _state == UnitState.DEAD:
 		return
@@ -407,14 +421,14 @@ func _draw() -> void:
 	var bar_w := 30.0
 	var bar_h :=  5.0
 	var bx    := -bar_w * 0.5
-	var by    := -20.0
-	draw_rect(Rect2(bx, by, bar_w, bar_h), Color(0.15, 0.15, 0.15))
-	var fill_col: Color
-	if pct > 0.5:
-		fill_col = Color(0.1, 0.85, 0.1)
-	elif pct > 0.25:
-		fill_col = Color(0.95, 0.75, 0.05)
-	else:
-		fill_col = Color(0.90, 0.15, 0.10)
-	draw_rect(Rect2(bx, by, bar_w * pct, bar_h), fill_col)
-	draw_rect(Rect2(bx, by, bar_w, bar_h), Color(0, 0, 0, 0.6), false, 1.0)
+	# Giant is taller, push the bar above its head
+	var by    := -34.0 if get_meta("card_id", "") == "giant" else -28.0
+	var fill_w  := bar_w * pct
+	var top_h   := bar_h * 0.58
+	var bot_h   := bar_h - top_h
+	var col_top := Color(0.30, 0.70, 1.00) if owner_player == 0 else Color(0.95, 0.15, 0.10)
+	var col_bot := Color(0.08, 0.08, 0.82) if owner_player == 0 else Color(0.48, 0.05, 0.05)
+	draw_rect(Rect2(bx, by, bar_w, bar_h), Color(0.05, 0.05, 0.05))
+	draw_rect(Rect2(bx, by + top_h, fill_w, bot_h), col_bot)
+	draw_rect(Rect2(bx, by,         fill_w, top_h), col_top)
+	draw_rect(Rect2(bx, by, bar_w, bar_h), Color(0, 0, 0, 0.85), false, 2.0)

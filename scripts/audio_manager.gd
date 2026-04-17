@@ -3,18 +3,41 @@ extends Node
 # All sounds are generated as AudioStreamWAV objects at startup.
 # Access via: get_tree().get_first_node_in_group("audio_manager")
 
-const RATE := 22050   # Hz — half of CD quality, still sounds fine for SFX
+const RATE := 11025   # Hz — quarter CD rate, fine for arcade SFX, half the work
 
-var _sfx:    Dictionary = {}          # name → AudioStreamWAV
+var _sfx:    Dictionary = {}
 var _pool:   Array[AudioStreamPlayer] = []
 var _pool_i: int = 0
 var _music:  AudioStreamPlayer
+var _thread: Thread = null
 
 func _ready() -> void:
 	add_to_group("audio_manager")
-	_build_sfx()
 	_build_pool()
-	_start_music()
+	_setup_music_player()
+	_load_file_sfx()   # load file-based SFX synchronously before countdown fires
+	# Generate remaining procedural SFX on a background thread
+	_thread = Thread.new()
+	_thread.start(_generate_all)
+
+func _generate_all() -> void:
+	var sfx := {
+		"deploy":        _make_deploy(),
+		"hit":           _make_hit(),
+		"arrow":         _make_arrow(),
+		"tower_hit":     _make_tower_hit(),
+		"tower_destroy": _make_tower_destroy(),
+		"crown":         _make_crown(),
+		"victory":       _make_victory(),
+	}
+	call_deferred("_on_audio_ready", sfx)
+
+func _on_audio_ready(sfx: Dictionary) -> void:
+	for k: String in sfx:
+		if not _sfx.has(k):
+			_sfx[k] = sfx[k]
+	_thread.wait_to_finish()
+	_thread = null
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
@@ -35,14 +58,21 @@ func stop_music() -> void:
 
 # ── SFX construction ──────────────────────────────────────────────────────────
 
-func _build_sfx() -> void:
-	_sfx["deploy"]        = _make_deploy()
-	_sfx["hit"]           = _make_hit()
-	_sfx["arrow"]         = _make_arrow()
-	_sfx["tower_hit"]     = _make_tower_hit()
-	_sfx["tower_destroy"] = _make_tower_destroy()
-	_sfx["crown"]         = _make_crown()
-	_sfx["victory"]       = _make_victory()
+func _setup_music_player() -> void:
+	_music           = AudioStreamPlayer.new()
+	_music.bus       = "Master"
+	_music.volume_db = -14.0
+	add_child(_music)
+	var stream := load("res://assets/sounds/battle_theme.mp3") as AudioStreamMP3
+	if stream:
+		stream.loop   = true
+		_music.stream = stream
+		_music.play()
+
+func _load_file_sfx() -> void:
+	var countdown_path := "res://assets/sounds/count_down_sfx.mp3"
+	if ResourceLoader.exists(countdown_path):
+		_sfx["countdown"] = load(countdown_path)
 
 func _build_pool() -> void:
 	for _i in range(10):
@@ -51,14 +81,6 @@ func _build_pool() -> void:
 		p.volume_db  = -4.0
 		add_child(p)
 		_pool.append(p)
-
-func _start_music() -> void:
-	_music           = AudioStreamPlayer.new()
-	_music.bus       = "Master"
-	_music.volume_db = -14.0
-	add_child(_music)
-	_music.stream = _make_music()
-	_music.play()
 
 # ── WAV encoding ──────────────────────────────────────────────────────────────
 

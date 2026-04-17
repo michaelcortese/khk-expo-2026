@@ -34,7 +34,7 @@ func start(world_pos: Vector2, is_king: bool) -> void:
 	rng.randomize()
 
 	# ── Sparks ────────────────────────────────────────────────────────────────
-	var spark_n  := 48 if is_king else 28
+	var spark_n  := 28 if is_king else 16   # reduced for Jetson perf
 	var sp_min   := 70.0  if is_king else 50.0
 	var sp_max   := 280.0 if is_king else 200.0
 	for _i in range(spark_n):
@@ -54,7 +54,7 @@ func start(world_pos: Vector2, is_king: bool) -> void:
 		})
 
 	# ── Debris ────────────────────────────────────────────────────────────────
-	var deb_n  := 14 if is_king else 8
+	var deb_n  := 8 if is_king else 5   # reduced for Jetson perf
 	var db_min := 55.0  if is_king else 40.0
 	var db_max := 160.0 if is_king else 110.0
 	for _i in range(deb_n):
@@ -65,17 +65,21 @@ func start(world_pos: Vector2, is_king: bool) -> void:
 		if pick < 0.5:    col = Color(0.45, 0.32, 0.18)  # stone/wood
 		elif pick < 0.80: col = Color(0.60, 0.45, 0.22)  # light stone
 		else:             col = Color(0.30, 0.20, 0.10)   # dark wood
+		# Pre-allocate the pts array — updated each frame in _process, used in _draw
+		var pts := PackedVector2Array()
+		pts.resize(4)
 		_debris.append({
 			"pos":    Vector2.ZERO,
 			"vel":    Vector2(cos(angle), sin(angle)) * speed,
 			"sz":     rng.randf_range(6.0, 14.0 if is_king else 10.0),
 			"rot":    rng.randf() * TAU,
-			"rot_v":  rng.randf_range(-8.0, 8.0),   # radians/s
+			"rot_v":  rng.randf_range(-8.0, 8.0),
 			"col":    col,
+			"pts":    pts,
 		})
 
 	# ── Smoke puffs ───────────────────────────────────────────────────────────
-	var smk_n := 7 if is_king else 4
+	var smk_n := 4 if is_king else 3   # reduced for Jetson perf
 	for _i in range(smk_n):
 		var angle := rng.randf() * TAU
 		var speed := rng.randf_range(15.0, 50.0)
@@ -95,12 +99,21 @@ func _process(delta: float) -> void:
 		s["pos"] += s["vel"] * delta
 		s["vel"] *= 0.82
 
-	# Debris — friction + gravity
+	# Debris — friction + gravity; pre-compute rotated polygon here (not in _draw)
 	for d in _debris:
 		d["pos"] += d["vel"] * delta
 		d["vel"].y += GRAVITY * delta
 		d["vel"]   *= 0.92
 		d["rot"]   += d["rot_v"] * delta
+		var half: float = float(d["sz"]) * 0.5
+		var rot:  float = float(d["rot"])
+		var p:    Vector2 = d["pos"]
+		var pts: PackedVector2Array = d["pts"]
+		pts[0] = p + Vector2(cos(rot)           * half, sin(rot)           * half)
+		pts[1] = p + Vector2(cos(rot + PI*0.5)  * half, sin(rot + PI*0.5)  * half)
+		pts[2] = p + Vector2(cos(rot + PI)      * half, sin(rot + PI)      * half)
+		pts[3] = p + Vector2(cos(rot + PI*1.5)  * half, sin(rot + PI*1.5)  * half)
+		d["pts"] = pts
 
 	# Smoke — expand radius toward r_max
 	for sm in _smoke:
@@ -135,21 +148,11 @@ func _draw() -> void:
 		var g: float = sm["grey"]
 		draw_circle(sm["pos"], sm["r"], Color(g, g, g, smk_a))
 
-	# ── Debris ────────────────────────────────────────────────────────────────
+	# ── Debris (polygon pts pre-computed in _process) ────────────────────────
 	var deb_a := maxf(0.0, 1.0 - life * 1.1)
 	for d in _debris:
-		var sz: float  = d["sz"]
-		var rot: float = d["rot"]
 		var col: Color = d["col"]
-		var half       := sz * 0.5
-		# Rotated square as a polygon
-		var pts := PackedVector2Array([
-			d["pos"] + Vector2(cos(rot        ) * half, sin(rot        ) * half),
-			d["pos"] + Vector2(cos(rot + PI*0.5) * half, sin(rot + PI*0.5) * half),
-			d["pos"] + Vector2(cos(rot + PI    ) * half, sin(rot + PI    ) * half),
-			d["pos"] + Vector2(cos(rot + PI*1.5) * half, sin(rot + PI*1.5) * half),
-		])
-		draw_colored_polygon(pts, Color(col.r, col.g, col.b, deb_a))
+		draw_colored_polygon(d["pts"], Color(col.r, col.g, col.b, deb_a))
 
 	# ── Sparks ────────────────────────────────────────────────────────────────
 	var sp_a := maxf(0.0, 1.0 - life * 1.3)

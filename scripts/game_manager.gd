@@ -58,6 +58,9 @@ func _start_countdown() -> void:
 	lbl.add_theme_font_size_override("font_size", 120)
 	cl.add_child(lbl)
 
+	if _audio:
+		_audio.play("countdown", -2.0)
+
 	var tw := create_tween()
 	for num in ["3", "2", "1", "GO!"]:
 		var col := Color(1.0, 0.85, 0.1) if num != "GO!" else Color(0.2, 1.0, 0.4)
@@ -199,7 +202,7 @@ func _make_cards() -> Array[CardData]:
 	spear_goblin.is_ranged     = true
 
 	var goblin_gang := CardData.new()
-	goblin_gang.card_id        = "goblin"
+	goblin_gang.card_id        = "goblin_gang"
 	goblin_gang.display_name   = "Goblin Gang"
 	goblin_gang.cost           = 3
 	goblin_gang.max_hp         = 80
@@ -218,13 +221,14 @@ func _make_cards() -> Array[CardData]:
 var _game_over: bool = false
 
 func _tag_towers() -> void:
+	# [node_name, player_idx, is_king, tower_num (0=king,1=top princess,2=bot)]
 	var defs: Array = [
-		["King_Tower_P1",      0, true ],
-		["Princess_Tower1_P1", 0, false],
-		["Princess_Tower2_P1", 0, false],
-		["King_Tower_P2",      1, true ],
-		["Princess_Tower1_P2", 1, false],
-		["Princess_Tower2_P2", 1, false],
+		["King_Tower_P1",      0, true,  0],
+		["Princess_Tower1_P1", 0, false, 1],
+		["Princess_Tower2_P1", 0, false, 2],
+		["King_Tower_P2",      1, true,  0],
+		["Princess_Tower1_P2", 1, false, 1],
+		["Princess_Tower2_P2", 1, false, 2],
 	]
 	for d in defs:
 		var t := get_node_or_null(d[0])
@@ -232,6 +236,8 @@ func _tag_towers() -> void:
 			t.set("owner_player",  d[1])
 			t.set("is_king_tower", d[2])
 			t.connect("destroyed", _on_tower_destroyed.bind(t))
+			if not d[2]:   # princess towers only
+				t.call("setup_sprite", d[1], d[3])
 
 # ── Controllers ───────────────────────────────────────────────────────────────
 var _p1_controller: PlayerController

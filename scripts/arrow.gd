@@ -87,14 +87,31 @@ func _on_arrive() -> void:
 	_play_hit_effect()
 
 func _play_hit_effect() -> void:
-	if _shaft == null:
-		queue_free()
-		return
-	var end_scale := Vector2(5.0, 5.0) if _splash_radius > 0.0 else Vector2(2.2, 2.2)
-	var duration  := 0.20                if _splash_radius > 0.0 else 0.12
+	# Hide the shaft — hit sprite takes over
+	if _shaft != null:
+		_shaft.visible = false
+
+	# Reset rotation so the hit effect always faces upright
+	rotation = 0.0
+
+	# Load the 4 hit frames
+	var frames: Array = []
+	for i in range(1, 5):
+		frames.append(load("res://assets/hitpoints_assets/arrow_hit_frame%d.png" % i) as Texture2D)
+
+	var sp := Sprite2D.new()
+	sp.texture        = frames[0]
+	sp.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sp.scale          = Vector2(2.0, 2.0)
+	add_child(sp)
+
+	const FRAME_DUR := 0.06
 	var tw := create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(_shaft, "scale",      end_scale, duration)
-	tw.tween_property(_shaft, "modulate:a", 0.0,       duration)
-	tw.set_parallel(false)
+	tw.tween_interval(FRAME_DUR)
+	tw.tween_callback(func(): sp.texture = frames[1])
+	tw.tween_interval(FRAME_DUR)
+	tw.tween_callback(func(): sp.texture = frames[2])
+	tw.tween_interval(FRAME_DUR)
+	tw.tween_callback(func(): sp.texture = frames[3])
+	tw.tween_interval(FRAME_DUR)
 	tw.tween_callback(queue_free)

@@ -112,7 +112,7 @@ func _make_player_panel(cl: CanvasLayer, p: int) -> void:
 
 	var info := Label.new()
 	info.text = "Joystick → Move cursor\nButtons 1-4 → Play cards\n\nKeyboard: WASD + Z X C V" if is_p1 \
-	         else "Joystick → Move cursor\nButtons 1-4 → Play cards\n\nKeyboard: Arrows + I J K L"
+			 else "Joystick → Move cursor\nButtons 1-4 → Play cards\n\nKeyboard: Arrows + I J K L"
 	info.position = Vector2(bx + 20, by + 72)
 	info.size     = Vector2(bw - 40, bh - 80)
 	info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

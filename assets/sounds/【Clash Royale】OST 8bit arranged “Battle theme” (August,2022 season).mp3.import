@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://1s1q0r4f8jh2"
+path="res://.godot/imported/【Clash Royale】OST 8bit arranged “Battle theme” (August,2022 season).mp3-af693f101b222745610cfd3e94de93fa.mp3str"
+
+[deps]
+
+source_file="res://assets/sounds/【Clash Royale】OST 8bit arranged “Battle theme” (August,2022 season).mp3"
+dest_files=["res://.godot/imported/【Clash Royale】OST 8bit arranged “Battle theme” (August,2022 season).mp3-af693f101b222745610cfd3e94de93fa.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
