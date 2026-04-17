@@ -31,6 +31,7 @@ var p2_deck: Deck
 
 var _troop_scene: PackedScene
 var _hud: HUD
+var _hud_tick: int = 0
 
 func _ready() -> void:
 	_troop_scene = load("res://troop.tscn")
@@ -287,10 +288,10 @@ func _fit_camera_above_hud() -> void:
 		cam.position = Vector2(480, 372)
 
 func _update_hud() -> void:
-	if _hud:
-		_hud.update_hud(p1_elixir, p2_elixir, p1_deck, p2_deck)
-		_hud.set_crowns(_p1_crowns, _p2_crowns)
-		var remaining: float
+	if not _hud:
+		return
+	_hud.update_hud(p1_elixir, p2_elixir, p1_deck, p2_deck)
+	var remaining: float
 		match _phase:
 			Phase.REGULAR:
 				remaining = maxf(0.0, _match_timer)
@@ -327,6 +328,7 @@ func _on_tower_destroyed(tower: Node) -> void:
 		_p1_crowns += 1
 	else:
 		_p2_crowns += 1
+	if _hud: _hud.set_crowns(_p1_crowns, _p2_crowns)
 
 	if is_king:
 		# Award crowns for any princess towers still standing on the losing side
@@ -536,7 +538,10 @@ func _process(delta: float) -> void:
 					if tower.get("is_alive"):
 						tower.call("take_damage", dmg)
 
-	_update_hud()
+	_hud_tick += 1
+	if _hud_tick >= 3:
+		_hud_tick = 0
+		_update_hud()
 
 # ── Card played ───────────────────────────────────────────────────────────────
 func _on_card_played(slot: int, world_pos: Vector2, player_idx: int) -> void:

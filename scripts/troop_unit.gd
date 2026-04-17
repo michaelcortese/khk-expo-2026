@@ -38,8 +38,9 @@ var _wp_idx: int               = 0
 const WP_REACH_DIST: float     = 14.0
 
 # Target polling
-var _poll_counter: int = 0
-const POLL_EVERY: int  = 8
+var _poll_counter: int  = 0
+const POLL_EVERY: int   = 15
+var _cached_towers: Array = []
 
 # Attack timing: damage fires at DAMAGE_FRACTION into the swing, not at the start
 # _attack_timer counts down from (1/attack_speed) to 0 — one full attack cycle
@@ -158,6 +159,7 @@ func _physics_process(delta: float) -> void:
 	if _poll_counter >= POLL_EVERY:
 		_poll_counter = 0
 		_find_target()
+		_cached_towers = get_tree().get_nodes_in_group("towers")
 
 	# Advance bridge waypoints
 	if _wp_idx < _waypoints.size():
@@ -228,7 +230,7 @@ func _handle_movement(delta: float) -> void:
 	# instead of pushing head-on and stopping.
 	const AVOID_RADIUS   := 95.0
 	const AVOID_STRENGTH := 5.0
-	for tower in get_tree().get_nodes_in_group("towers"):
+	for tower in _cached_towers:
 		if tower == _target:
 			continue
 		if not is_instance_valid(tower):
