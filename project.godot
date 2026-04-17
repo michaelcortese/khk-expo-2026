@@ -14,18 +14,16 @@ config/name="khkroyale"
 config/description="game for uw madison 2026 engineering expo"
 run/main_scene="uid://cmxdfmgep14yj"
 config/features=PackedStringArray("4.6", "GL Compatibility")
+run/max_fps=60
 config/icon="res://icon.svg"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=1024
+window/size/mode=2
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-
-[application]
-
-run/max_fps=60
 
 [physics]
 

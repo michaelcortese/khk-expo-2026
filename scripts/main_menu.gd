@@ -5,7 +5,19 @@ const P2_COL := Color(1.0,  0.18, 0.18)
 const GOLD   := Color(1.0,  0.85, 0.10)
 
 func _ready() -> void:
+	_apply_pixel_font()
 	_build_ui()
+
+func _apply_pixel_font() -> void:
+	var font := load("res://assets/fonts_assets/pokemon_fire_red.ttf") as FontFile
+	if font == null:
+		return
+	font.antialiasing          = TextServer.FONT_ANTIALIASING_NONE
+	font.hinting               = TextServer.HINTING_NONE
+	font.subpixel_positioning  = TextServer.SUBPIXEL_POSITIONING_DISABLED
+	font.generate_mipmaps      = false
+	ThemeDB.fallback_font      = font
+	ThemeDB.fallback_font_size = 16
 
 func _build_ui() -> void:
 	var cl := CanvasLayer.new()

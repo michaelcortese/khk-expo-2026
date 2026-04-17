@@ -34,8 +34,20 @@ var _hud: HUD
 var _hud_tick: int = 0
 
 func _ready() -> void:
+	_apply_pixel_font()
 	_troop_scene = load("res://troop.tscn")
 	_setup_field()
+
+func _apply_pixel_font() -> void:
+	var font := load("res://assets/fonts_assets/pokemon_fire_red.ttf") as FontFile
+	if font == null:
+		return
+	font.antialiasing          = TextServer.FONT_ANTIALIASING_NONE
+	font.hinting               = TextServer.HINTING_NONE
+	font.subpixel_positioning  = TextServer.SUBPIXEL_POSITIONING_DISABLED
+	font.generate_mipmaps      = false
+	ThemeDB.fallback_font      = font
+	ThemeDB.fallback_font_size = 16
 	_setup_decks()
 	_tag_towers()
 	_setup_controllers()
@@ -59,17 +71,29 @@ func _start_countdown() -> void:
 	lbl.add_theme_font_size_override("font_size", 120)
 	cl.add_child(lbl)
 
+	# Tweak these two constants to line up with the SFX file:
+	const BEAT      := 1.00   # seconds between each number in the audio
+	const FADE      := 0.22   # how long the fade-out takes at the end of each beat
+	const AUDIO_LAG := 0.05   # small offset for audio driver startup latency
+
 	if _audio:
 		_audio.play("countdown", -2.0)
 
 	var tw := create_tween()
+	tw.tween_interval(AUDIO_LAG)
 	for num in ["3", "2", "1", "GO!"]:
 		var col := Color(1.0, 0.85, 0.1) if num != "GO!" else Color(0.2, 1.0, 0.4)
 		tw.tween_callback(func():
 			lbl.text = num
 			lbl.add_theme_color_override("font_color", col)
+			lbl.scale    = Vector2(1.4, 1.4)
 			lbl.modulate.a = 1.0)
-		tw.tween_property(lbl, "modulate:a", 0.0, 0.75)
+		# Scale punch in
+		tw.tween_property(lbl, "scale", Vector2.ONE, 0.12) \
+				.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		# Hold visible for the rest of the beat, then fade quickly
+		tw.tween_interval(BEAT - 0.12 - FADE)
+		tw.tween_property(lbl, "modulate:a", 0.0, FADE)
 	tw.tween_callback(func():
 		_countdown_active = false
 		cl.queue_free())
@@ -237,8 +261,7 @@ func _tag_towers() -> void:
 			t.set("owner_player",  d[1])
 			t.set("is_king_tower", d[2])
 			t.connect("destroyed", _on_tower_destroyed.bind(t))
-			if not d[2]:   # princess towers only
-				t.call("setup_sprite", d[1], d[3])
+			t.call("setup_sprite", d[1], d[3])
 
 # ── Controllers ───────────────────────────────────────────────────────────────
 var _p1_controller: PlayerController

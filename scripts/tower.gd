@@ -41,7 +41,25 @@ func _ready() -> void:
 
 # Called by GameManager after owner_player and tower number are known.
 func setup_sprite(player_idx: int, tower_num: int) -> void:
-	var color   := "blue" if player_idx == 0 else "red"
+	var color := "blue" if player_idx == 0 else "red"
+
+	# King tower (tower_num == 0) — single static image, no animation
+	if tower_num == 0:
+		var path := "res://assets/towers_assets/%s_king_tower.png" % color
+		if not ResourceLoader.exists(path):
+			return
+		for child in get_children():
+			if child is ColorRect:
+				child.visible = false
+		_tower_sprite                = Sprite2D.new()
+		_tower_sprite.texture        = load(path) as Texture2D
+		_tower_sprite.scale          = Vector2(2.0, 2.0)
+		_tower_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		_tower_sprite.position       = Vector2(0.0, -8.0)
+		add_child(_tower_sprite)
+		return
+
+	# Princess towers — 2-frame walk + surrender animation
 	var base    := "res://assets/towers_assets/%s_princess_%d_" % [color, tower_num]
 	var f1_path := base + "frame1.png"
 	var f2_path := base + "frame2.png"
@@ -49,12 +67,11 @@ func setup_sprite(player_idx: int, tower_num: int) -> void:
 	var s2_path := base + "surrender_frame2.png"
 
 	if not ResourceLoader.exists(f1_path):
-		return   # no sprite available for this tower — keep placeholder
+		return
 
 	_normal_frames    = [load(f1_path), load(f2_path)]
 	_surrender_frames = [load(s1_path), load(s2_path)]
 
-	# Hide the ColorRect placeholder
 	for child in get_children():
 		if child is ColorRect:
 			child.visible = false

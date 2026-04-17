@@ -16,7 +16,7 @@ position = Vector2(40, 240)
 position = Vector2(220, 80)
 
 [node name="Princess_Tower2_P1" parent="." unique_id=1908782305 instance=ExtResource("2_e2o6t")]
-position = Vector2(220, 400)
+position = Vector2(220, 370)
 
 [node name="King_Tower_P2" parent="." unique_id=768260525 instance=ExtResource("2_e2o6t")]
 position = Vector2(920, 240)
@@ -25,4 +25,4 @@ position = Vector2(920, 240)
 position = Vector2(740, 80)
 
 [node name="Princess_Tower2_P2" parent="." unique_id=1541098631 instance=ExtResource("2_e2o6t")]
-position = Vector2(740, 400)
+position = Vector2(740, 370)
