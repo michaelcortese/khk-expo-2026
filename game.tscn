@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://coqc5t61aq5uq"]
+
+[ext_resource type="Script" uid="uid://c3tp74tbspyu2" path="res://scripts/game_manager.gd" id="1_gm"]
+[ext_resource type="PackedScene" uid="uid://1snudtp457yt" path="res://tower.tscn" id="2_e2o6t"]
+
+[node name="Game" type="Node2D" unique_id=632213616]
+script = ExtResource("1_gm")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1433869809]
+position = Vector2(480, 240)
+
+[node name="King_Tower_P1" parent="." unique_id=1258321266 instance=ExtResource("2_e2o6t")]
+position = Vector2(51, 240)
+
+[node name="Princess_Tower1_P1" parent="." unique_id=957856165 instance=ExtResource("2_e2o6t")]
+position = Vector2(220, 98)
+
+[node name="Princess_Tower2_P1" parent="." unique_id=1908782305 instance=ExtResource("2_e2o6t")]
+position = Vector2(220, 329)
+
+[node name="King_Tower_P2" parent="." unique_id=768260525 instance=ExtResource("2_e2o6t")]
+position = Vector2(912, 240)
+
+[node name="Princess_Tower1_P2" parent="." unique_id=321096686 instance=ExtResource("2_e2o6t")]
+position = Vector2(740, 98)
+
+[node name="Princess_Tower2_P2" parent="." unique_id=1541098631 instance=ExtResource("2_e2o6t")]
+position = Vector2(740, 329)

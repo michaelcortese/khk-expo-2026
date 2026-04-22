@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://peili7210lj2"]
+
+[ext_resource type="Script" path="res://scripts/tower.gd" id="1_tower"]
+[ext_resource type="Texture2D" uid="uid://bkusaprs6oske" path="res://MessyAssets/Box.png" id="2_k0qbo"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(80, 80)
+
+[node name="ResourceNode_Tower" type="StaticBody2D" script=ExtResource("1_tower")]
+collision_layer = 1
+collision_mask = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.35, 0.35)
+texture = ExtResource("2_k0qbo")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")

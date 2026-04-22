@@ -12,13 +12,25 @@ config_version=5
 
 config/name="khkroyale"
 config/description="game for uw madison 2026 engineering expo"
-config/features=PackedStringArray("4.6", "Forward Plus")
+run/main_scene="uid://cmxdfmgep14yj"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+run/max_fps=60
 config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=1024
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [physics]
 
+common/physics_ticks_per_second=30
 3d/physics_engine="Jolt Physics"
 
 [rendering]
 
-rendering_device/driver.windows="d3d12"
+textures/canvas_textures/default_texture_filter=0
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

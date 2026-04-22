@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://1snudtp457yt"]
+
+[ext_resource type="Script" uid="uid://bpihviiys18ip" path="res://scripts/tower.gd" id="1_k1sas"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vedim"]
+size = Vector2(60, 60)
+
+[node name="Tower" type="StaticBody2D" unique_id=1258321266]
+script = ExtResource("1_k1sas")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=187093217]
+shape = SubResource("RectangleShape2D_vedim")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=162329989]
+offset_left = -30.0
+offset_top = -30.0
+offset_right = 30.0
+offset_bottom = 30.0
+color = Color(0, 0.39225495, 0.91702455, 1)
